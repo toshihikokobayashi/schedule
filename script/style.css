@@ -1,0 +1,167 @@
+﻿
+body {
+	margin: 0px 60px 0px 60px;
+}
+
+h1 { color: #ff0000; }
+p { line-height: 140%; }
+
+#header { 
+	background-color: #c0c0c0;
+	padding: 20px;
+	font-size: 22px;
+	color: #333333;
+	text-align: center;
+}
+
+#content { 
+	background-color: #ffffff;
+	padding: 20px 10px 20px 10px;
+	font-size: 16px;
+	color: #333333;
+}
+
+#calender {
+	background-color: #c0c0c0;
+	border-bottom: 2px solid #87b3bc;
+	font-size: 18px;
+	color: #333333;
+}
+
+#wrapper {
+	width: 920px;
+}
+
+td.month {
+	background-color: #ffffff;
+	padding: 10px;
+	text-align: center;
+}
+
+.month {
+	font-size: 20px;
+	font-weight: bold;
+	color: #333333;
+}
+
+.month_link {
+	font-size: 14px;
+}
+
+
+
+th.sunday {
+	width: 130px;
+	background-color: #ffffff;
+	padding: 10px;
+	font-size: 18px;
+	color: #ff0000;
+	text-align: center;
+}
+
+th.saturday {
+	width: 130px;
+	background-color: #ffffff;
+	padding: 10px;
+	font-size: 18px;
+	color: #0000ff;
+	text-align: center;
+}
+
+th.day {
+	width: 130px;
+	background-color: #ffffff;
+	padding: 10px;
+	font-size: 18px;
+	color: #000000;
+	text-align: center;
+}
+
+
+/* td.day?EA?-´1?¨*/
+#day {
+	/*width: 120px;*/
+	height: 100px;
+	background-color: #ffffff;
+	padding: 5px;
+	font-size: 12px;
+	color: #000000;
+	text-align: left;
+	vertical-align: top;
+}
+
+#today {
+	/*width: 120px;*/
+	height: 100px;
+	background-color: #ffffff;
+	padding: 5px;
+	font-size: 12px;
+	font-weight: bold;
+	color: #000000;
+	text-align: left;
+	vertical-align: top;
+}
+
+div.menu_box_left {
+	border: 1px solid #000000;
+	margin: 5px;
+	width: 425px;
+	height: 230px;
+	font-size: 16px;
+	float:left;	
+}
+
+div.menu_box_right {
+	border: 1px solid #000000;
+	margin: 5px;
+	width: 425px;
+	height: 230px;
+	font-size: 16px;
+	float:right;	
+}
+
+div.menu_box_mini_left {
+	border: 1px solid #000000;
+	margin: 5px;
+	width: 425px;
+	height: 150px;
+	font-size: 16px;
+	float:left;	
+}
+
+div.menu_box_mini_right {
+	border: 1px solid #000000;
+	margin: 5px;
+	width: 425px;
+	height: 150px;
+	font-size: 16px;
+	float:right;	
+}
+
+
+div.menu_box {
+	border: 1px solid #000000;
+	margin: 5px;
+	padding: 5px;
+	width: 650px;
+	font-size: 16px;
+	text-align:left;
+}
+
+
+div.title_box {
+	font-size: 16px;
+}
+
+table.meisai {
+	border-collapse: collapse;
+	border: 2px #000000 solid;
+}
+th.meisai {
+	border: 2px #000000 solid;
+}
+td.meisai {
+	border: 2px #000000 solid;
+}
+
+/*.copy { color: #808080; }*/
