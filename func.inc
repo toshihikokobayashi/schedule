@@ -42,10 +42,10 @@ $kind_list = array(
 								array("no"=>"2", "name"=>"テキスト", "type"=>"1"),
 								array("no"=>"3", "name"=>"模試", "type"=>"1"),
 								array("no"=>"4", "name"=>"月会費", "type"=>"0"),
-//								array("no"=>"5", "name"=>"入会金", "type"=>"0")
+								array("no"=>"5", "name"=>"入会金", "type"=>"0"),
 								array("no"=>"6", "name"=>"督促金", "type"=>"0"),
 //								array("no"=>"7", "name"=>"夏期講習", "type"=>"0"),
-								array("no"=>"8", "name"=>"支払い調整", "type"=>"0"),
+								array("no"=>"8", "name"=>"売上外調整", "type"=>"0"),
 						);
 /*
 $kind_list = array(
@@ -67,6 +67,7 @@ $place_list[7] = array("no"=>"7","name"=>"ダットッチ校","calendar_name_lis
 $place_list[8] = array("no"=>"8","name"=>"豊田校","calendar_name_list"=>array("English_toyoda","塾_豊田校"));
 $place_list[9] = array("no"=>"9","name"=>"子安校","calendar_name_list"=>array("ピアノ","習い事_子安校","塾_子安校"));
 $place_list[10] = array("no"=>"10","name"=>"国立校","calendar_name_list"=>array("塾_国立校","English_Kunitachi"));
+$place_list[11] = array("no"=>"11","name"=>"北口校２Ｆ","calendar_name_list"=>array("塾_八王子_2F"));
 
 $tatekae_item_list = array("備品・消耗品費","書籍費","交際費","支払手数料","荷造運賃費","その他");
 
@@ -240,7 +241,28 @@ $sat_sun_class_date_list = array(
 "2020/02/22",
 "2020/02/23",
 "2020/02/24",
-"2020/02/29"
+"2020/02/29",
+
+"2020/03/01",
+"2020/03/07",
+"2020/03/08",
+"2020/03/14",
+"2020/03/15",
+"2020/03/20",
+"2020/03/21",
+"2020/03/22",
+"2020/03/28",
+"2020/03/29",
+
+"2020/04/04",
+"2020/04/05",
+"2020/04/11",
+"2020/04/12",
+"2020/04/18",
+"2020/04/19",
+"2020/04/25",
+"2020/04/26",
+"2020/04/29"
 
 );
 foreach ($sat_sun_class_date_list as $i=>$item) { if ($i==0) { $sat_sun_class_date_list_string = "('$item'"; } else { $sat_sun_class_date_list_string = $sat_sun_class_date_list_string.",'$item'"; } }
@@ -436,6 +458,8 @@ $time_list = array(
 	);
 $default_stime=4;
 $default_etime=14;
+$default_stime_sat=8;
+$default_etime_sat=18;
 
 
 $jyuku_wage_type_list = array(
@@ -509,83 +533,6 @@ if ($season_course_id == 4) {
 	define('LESSON_DATE_COUNT_2',15);
 }
 
-// １時間あたりのマンツーマン受講料
-$lesson_fee_table[0] = array(
-	0  => array(			//"未登録"
-				),
-	1  => array(			//"幼児"
-				),
-	2  => array(			//"小１"
-					LESSON60  => 4500,
-					LESSON90  => 4250,
-					LESSON120 => 4000
-				),
-	3  => array(			//"小２"
-					LESSON60  => 4500,
-					LESSON90  => 4250,
-					LESSON120 => 4000
-				),
-	4  => array(			//"小３"
-					LESSON60  => 4500,
-					LESSON90  => 4250,
-					LESSON120 => 4000
-				),
-	5  => array(			//"小４"
-					LESSON60  => 4500,
-					LESSON90  => 4250,
-					LESSON120 => 4000
-				),
-	6  => array(			//"小５"
-					LESSON60  => 4500,
-					LESSON90  => 4250,
-					LESSON120 => 4000
-				),
-	7  => array(			//"小６"
-					LESSON60  => 4500,
-					LESSON90  => 4250,
-					LESSON120 => 4000
-				),
-	8  => array(			//"中１"
-					LESSON60  => 4500,
-					LESSON90  => 4250,
-					LESSON120 => 4000
-				),
-	9  => array(			//"中２"
-					LESSON60  => 4500,
-					LESSON90  => 4250,
-					LESSON120 => 4000
-				),
-	10 => array(			//"中３"
-					LESSON60  => 5000,
-					LESSON90  => 4750,
-					LESSON120 => 4500
-				),
-	11 => array(			//"高１"
-					LESSON60  => 5000,
-					LESSON90  => 4750,
-					LESSON120 => 4500
-				),
-	12 => array(			//"高２"
-					LESSON60  => 5000,
-					LESSON90  => 4750,
-					LESSON120 => 4500
-				),
-	13 => array(			//"高３"
-					LESSON60  => 5500,
-					LESSON90  => 5250,
-					LESSON120 => 5000
-				),
-	14 => array(			//"成人"
-				),
-);
-
-// 1日当たりの演習解説受講料
-$exercise_fee_table[0] = array(
-	LESSON60  => array( 1000, 800, 600, 600 ),
-	LESSON90  => array(  800, 550, 450, 450 ),
-	LESSON120 => array(  600, 450, 400, 400 )
-);
-
 // 20170830 2017夏期講習の特別対応
 $sql = "SELECT member_no FROM tbl_divided_payment WHERE year=2017 and month=8 and type_id=4";
 $stmt = $db->prepare($sql);
@@ -594,10 +541,14 @@ $except20170830 = $stmt->fetch(PDO::FETCH_NUM);
 if ($except20170830 === false) { $except20170830 = array(); }
 
 // データベース接続
-function connect_DB(&$db) {
+function connect_DB(&$db,&$lms_db = null) {
 	try{
 		$db = new PDO(PDO_DSN, DB_USER, DB_PASSWD);
 		$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		if ($lms_db) {
+			$lms_db = new PDO(LMS_PDO_DSN, LMS_DB_USER, LMS_DB_PASSWD);
+			$lms_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		}
 	}catch (PDOException $e){
 		//$err_msg = 'Connection failed: ' . $e->getMessage();
 		//exit($err_msg);
@@ -1822,6 +1773,10 @@ function check_others_list(&$errArray, $others_array) {
 		!$place_list[$others_array["place_id"]]["name"]) {
 		$errFlag = 1;
  		array_push($errArray, "校舎を選択してください。");
+	}
+	if ($others_array["charge"] != 1 && $others_array["charge"] != 2) {
+		$errFlag = 1;
+ 		array_push($errArray, "請求あり／なしを選択してください。");
 	}
 	if ($errFlag == 0) {
 		return true;
@@ -3696,6 +3651,10 @@ function get_student_join_month($db, $member_no, $lesson_id=0) {
 	if ($member_no == '001088') {
 		return '2018/08';
 	}
+	// 潮 大煌さん
+	if ($member_no == '000761' && $lesson_id == 1) {
+		return '2019/04';
+	}
 	try {
 		$sql = "SELECT FROM_UNIXTIME(MIN(start_timestamp),'%Y/%m') FROM tbl_statement_detail WHERE student_id = \"$member_no\" ";
 		if ($lesson_id != 0)	$sql .= "AND lesson_id = \"$lesson_id\"";
@@ -3729,7 +3688,10 @@ function get_season_fee_table($db) {
 		$stmt = $db->query("SELECT * FROM tbl_season_class_lesson_fee");
 		$rslt = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		foreach ($rslt as $item) {
-			$lesson_fee_table[$item['no']-1][$item['grade']][$item['course']] = $item['fee'];
+			if ($item['jyukensei_flag'])
+				$lesson_fee_table[$item['no']-1][$item['grade']][$item['course']][1] = $item['fee'];
+			else
+				$lesson_fee_table[$item['no']-1][$item['grade']][$item['course']][0] = $item['fee'];
 		}
 		$stmt = $db->query("SELECT * FROM tbl_season_class_exercise_fee");
 		$rslt = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -3743,10 +3705,13 @@ function get_season_fee_table($db) {
 }
 
 function get_season_fee_type($db, $member_no) {
-		if (get_student_join_month($db, $member_no)<'2018/09')
-			return 0;
-		else
-			return 1;
+	$join_month = get_student_join_month($db, $member_no, 1);
+	if ($join_month < '2018/09')
+		return 0;
+	else if ($join_month < '2019/11')
+		return 1;
+	else
+		return 2;
 }
 
 function get_grade($db, $member, $year, $month, $april_start) {
@@ -3756,8 +3721,19 @@ function get_grade($db, $member, $year, $month, $april_start) {
 	$grade = $member['grade'];
 	if ($grade) {
 		$grade -= date('Y') - $year;
-		if ($april_start) {
-			if ($month<4) $grade--;
+		if (date('n')<4) {
+			if ($month<4) {
+			} else {
+				$grade++;
+			}
+		} else {
+			if ($month<4) {
+				$grade--;
+			} else {
+			}
+		}
+		if (!$april_start) {
+			if ($month<4) $grade++;
 		}
 	} else if ($birth_year && $birth_month && $birth_day) {
 		$grade = $year-5-$birth_year;
@@ -3777,10 +3753,12 @@ function get_grade($db, $member, $year, $month, $april_start) {
 
 function get_lesson_count($db, $member_no, $year, $month, $lesson_id, $course_id) {
 	$stmt = $db->query("SELECT DAYOFWEEK(FROM_UNIXTIME(event_start_timestamp)) FROM tbl_event WHERE member_no = '$member_no'".
-		" AND event_year = '$year' AND event_month = '$month'".
+//		" AND event_year = '$year' AND event_month = '$month'".
+		" AND event_start_timestamp <= '".strtotime("last day of $year-$month")."'".
 		" AND lesson_id = '$lesson_id' AND course_id = '$course_id'".
 		" AND cal_evt_summary NOT LIKE '%(仮)%' AND cal_evt_summary NOT LIKE '%（仮）%'".
-		" AND recurringEvent = 1"
+		" AND recurringEvent = 1".
+		" ORDER BY event_start_timestamp DESC LIMIT 3"
 		);
 	$rslt = $stmt->fetchAll(PDO::FETCH_NUM);
 	if (!$rslt) return null;
@@ -3790,60 +3768,54 @@ function get_lesson_count($db, $member_no, $year, $month, $lesson_id, $course_id
 }
 
 function get_lesson_length($db, $member_no, $year, $month, $lesson_id, $course_id) {
-	$stmt = $db->query("SELECT SUM(event_diff_hours) FROM tbl_event WHERE member_no = '$member_no'".
-		" AND event_year = '$year' AND event_month = '$month'".
+	$stmt = $db->query("SELECT SUM((event_end_timestamp-event_start_timestamp)/60),event_start_timestamp,event_year,event_month,event_day,event_start_hour,event_start_minute,event_end_hour,event_end_minute FROM tbl_event WHERE member_no = '$member_no'".
+//		" AND event_year = '$year' AND event_month = '$month'".
+		" AND event_start_timestamp <= '".strtotime("last day of $year-$month")."'".
 		" AND lesson_id = '$lesson_id' AND course_id = '$course_id'".
 		" AND recurringEvent = 1".
-		" AND event_diff_hours != 0".
 		" AND cal_evt_summary NOT LIKE '%(仮)%' AND cal_evt_summary NOT LIKE '%（仮）%'".
-		" GROUP BY event_day"
+		" GROUP BY event_year, event_month, event_day".
+		" ORDER BY event_start_timestamp DESC LIMIT 3"
 		);
 	$rslt = $stmt->fetchAll(PDO::FETCH_NUM);
 	if (!$rslt) return null;
-	$rslt = array_unique(array_column($rslt,0));
-	if (count($rslt)>1) return null;
-	return floor($rslt[0]*60);
+//	$rslt = array_unique(array_column($rslt,0));
+//	if (count($rslt)>1) return null;
+//echo "$member_no    $year/$month/1  '".strtotime("$year/$month/1")."'<BR>";
+//if ($member_no=='001133')	{var_dump($rslt);echo"<BR>";}
+	$rslt = array_column($rslt,0);
+//if ($member_no=='001133')	{echo array_sum($rslt)/count($rslt);echo"<BR>";}
+	return array_sum($rslt)/count($rslt);
 }
 
 function get_default_fee($db, $member, $year, $month, $lesson_id, $course_id) {
 	try {
 		$member_no = $member['no'];
 		$lesson_count = get_lesson_count($db, $member_no, $year, $month, $lesson_id, $course_id);
-		if (!$lesson_count) return "授業回数不確定のため授業料自動登録できません。";
+		if (!$lesson_count) return "授業回数不確定";
 		$lesson_length = get_lesson_length($db, $member_no, $year, $month, $lesson_id, $course_id);
-		if (!$lesson_length) return "授業時間不確定のため授業料自動登録できません。";
+		if (!$lesson_length) return "授業時間不確定";
 		$ent_month = get_student_join_month($db, $member_no);
 		$grade = get_grade($db, $member, $year, $month, ($ent_month>='2018/09'));
 
 //echo "$member_no, $lesson_id, $course_id, $ent_month, $grade, $lesson_count, $lesson_length.";
 
 		$stmt = $db->query("SELECT lesson_fee FROM tbl_lesson_fee".
-			"	WHERE lesson_id = '$lesson_id' AND course_id = '$course_id'".
-			" AND lesson_grade <= '$grade'".
-			" AND lesson_count = '$lesson_count'".
-			" AND lesson_length = '$lesson_length'".
-			" AND (start_month = '' OR start_month<='$ent_month')".
-			" AND (end_month = '' OR end_month>='$ent_month')".
+			"	WHERE lesson_id = '$lesson_id' AND course_id = '$course_id' ".
+			" AND lesson_grade <= '$grade' ".
+			" AND lesson_count = '$lesson_count' ".
+			" AND lesson_length = '$lesson_length' ".
+			" AND (start_month = '' OR start_month<='$ent_month') ".
+			" AND (end_month = '' OR end_month>='$ent_month') ".
+			" AND jyukensei_flag = {$member['jyukensei']} ".
 			" ORDER BY lesson_grade DESC"
 			);
 		$rslt = $stmt->fetchAll(PDO::FETCH_NUM);
 		
 		$fee = $rslt[0][0];
 		
-		if ($fee && $lesson_id==1 && $member['jyukensei']) {
-			if ($ent_month>='2018/09') {
-				// 小学生受験生　+1000円
-				if ($grade>1 && $grade<8) $fee += 1000;
-			} else {
-				// 小４/小５受験生 +500円　小６受験生　+1000円
-				switch ($grade) {
-				case 5:
-				case 6: $fee += 500; break;
-				case 7: $fee +=1000; break;
-				}
-			}
-		}
-		
+		if (!$member['tax_flag'] && $fee) $fee = floor($fee * 1.02);
+				
 		return $fee;
 		
 	} catch (Exception $e) {

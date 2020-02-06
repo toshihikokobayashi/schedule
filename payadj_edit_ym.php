@@ -338,7 +338,7 @@ $employee_type= $payadj_array["employee_type"];
 		<th width="100">名前</th>
 		<th width="200"><font color="red">*</font>項目名</th>
 		<?php if ($employee_type == TEACHER)	echo '<th><font color="red">*</font>教室</th>'; ?>
-		<th><font color="red">*</font>種別</th>
+		<th><font color="red">*</font>税金</th>
 		<th width="80"><font color="red">*</font>金額</th>
 		<th width="550">備考</th>
 	</tr>
@@ -361,8 +361,8 @@ $employee_type= $payadj_array["employee_type"];
 		?>
 		<td align="center">
 		<select name="tax_flag">
-		<option value="1" <?= ($payadj_array["tax_flag"])?"selected":"" ?>>給料</option>
-		<option value="0" <?= ($payadj_array["tax_flag"])?"":"selected" ?>>交通費</option>
+		<option value="1" <?= ($payadj_array["tax_flag"])?"selected":"" ?>>課税</option>
+		<option value="0" <?= ($payadj_array["tax_flag"])?"":"selected" ?>>非課税</option>
 		</select>
 		</td>
 		<td align="right">
@@ -403,7 +403,7 @@ if (count($payadj_list) > 0) {
 <h3>講師</h3>
 <table border="1">
 	<tr>
-		<th>名前</th><th>項目名</th><th>教室</th><th>種別</th><th>金額</th><th>備考</th><th>&nbsp;</th>
+		<th>名前</th><th>項目名</th><th>教室</th><th>税金</th><th>金額</th><th>備考</th><th>&nbsp;</th>
 	</tr>
  	<?php
 	foreach ($payadj_list as $item) {
@@ -415,7 +415,7 @@ if (count($payadj_list) > 0) {
 			<?=$employee["name"]?></td>
 		<td align="left" width="200"><?=$item["name"]?></td>
 		<td align="center" width="80"><?=$lesson_list[$item["lesson_id"]]?></td>
-		<td align="center"><?= $item["tax_flag"]?"給料":"交通費" ?></td>
+		<td align="center"><?= $item["tax_flag"]?"課税":"非課税" ?></td>
 		<td align="right" width="80"><?=number_format($item["price"])?> 円</td>
 		<td align="left" width="550"><?=$item["memo"]?></td>
 		<td align="center" width="60">
@@ -432,7 +432,7 @@ if (count($payadj_list) > 0) {
 <h3>事務員</h3>
 <table border="1">
 	<tr>
-		<th>名前</th><th>項目名</th><th>種別</th><th>金額</th><th>備考</th><th>&nbsp;</th>
+		<th>名前</th><th>項目名</th><th>税金</th><th>金額</th><th>備考</th><th>&nbsp;</th>
 	</tr>
  	<?php
 	foreach ($payadj_list as $item) {
@@ -443,7 +443,7 @@ if (count($payadj_list) > 0) {
 		<td align="center" width="100"><input type="hidden" name="payadj_no[]" value="<?=$item["payadj_no"]?>">
 			<?=$employee["name"]?></td>
 		<td align="left" width="200"><?=$item["name"]?></td>
-		<td align="center"><?= $item["tax_flag"]?"給料":"交通費" ?></td>
+		<td align="center"><?= $item["tax_flag"]?"課税":"非課税" ?></td>
 		<td align="right" width="80"><?=number_format($item["price"])?> 円</td>
 		<td align="left" width="550"><?=$item["memo"]?></td>
 		<td align="center" width="60">

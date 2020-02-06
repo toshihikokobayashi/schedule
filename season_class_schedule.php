@@ -100,6 +100,8 @@ $member_name = $_POST["member_name"];
 $subject_name = $_POST["subject_name"];
 $teacher_name1 = $_POST["teacher_name1"];
 $lessons_array = $_POST["lessons"];
+$place_select = $_POST['place_select'];
+$teachers_select = $_POST['teachers_select'];
 
 sort($lessons_array);
 
@@ -136,7 +138,7 @@ try {
 	}
 
 	// 生徒リスト 
-	$sql = "SELECT a.member_id,a.date,a.stime,a.etime,a.season_course_id,a.attend_status,a.furikae_status,a.furikae_flag ".
+	$sql = "SELECT a.member_id,a.date,a.stime,a.etime,a.season_course_id,a.attend_status,a.furikae_status,a.furikae_flag,a.place ".
 					"FROM tbl_season_class_entry_date a, tbl_member b ".
 					"WHERE a.date IN $date_list_string AND a.member_id = b.no ORDER BY b.furigana";
 	$stmt = $db->prepare($sql);
@@ -151,6 +153,8 @@ try {
 		$members[$member['member_id']]['attend_status'][$member['date']]  = $member['attend_status'];
 		$members[$member['member_id']]['furikae_status'][$member['date']] = $member['furikae_status'];
 		$members[$member['member_id']]['furikae_flag'][$member['date']]   = $member['furikae_flag'];
+		if ($member['place'])	$places[] = $member['place']; else $places[] = $member['place'] = '校舎登録なし';
+		$members[$member['member_id']]['place']   = $member['place'];
 	}
 	$sql = "SELECT a.member_id,lesson_id,subject_id,subject_time FROM tbl_season_class_entry_date a, tbl_season_class_entry_subject b ".
 					" WHERE a.date IN $date_list_string AND a.member_id = b.member_id AND b.date='{$date_list[0]}' GROUP BY subject_id, a.member_id";
@@ -168,6 +172,8 @@ try {
 			unset($members[$mem_id]);
 		}
 	}
+	
+	$places = array_unique($places);
 
 //	if ($class_type=='sat_sun_class')
 		$sql = "SELECT a.no AS teacher_id,date,times,name FROM tbl_season_class_teacher_entry1 a, tbl_teacher b ".
@@ -181,7 +187,9 @@ try {
 	foreach ($rslt as $teacher) {
 		$teachers1[$teacher['teacher_id']][$teacher['date']] = $teacher;
 		$teachers_name1[] = $teacher['name'];
+		$teachers_id1[] = $teacher['teacher_id'];
 		$teacher_slot[$teacher['date']][] = $teacher['teacher_id'];
+		if ($_POST[teachers_select] === null)	$teachers_select[] = $teacher['teacher_id'];
 	}
 	$teachers_name1 = array_unique($teachers_name1);
 
@@ -251,7 +259,7 @@ try {
 		$lesson_length = floor($lesson_length / 30);
 	}
 	
-	if ($exec == '選択登録実行' && $action == 'mantoman' && $member_no && $subject_id ) {
+	if ($exec == '選択コマ登録' && $action == 'mantoman' && $member_no && $subject_id ) {
 		$db->beginTransaction();
 		$sql = "INSERT INTO tbl_season_schedule (date,stime,etime,lnum,teacher_no,member_no,lesson_id,subject_id,insert_timestamp,update_timestamp) ".
 						"VALUES (?,?,?,?,?,?,?,?,now(),now()) ".
@@ -281,7 +289,7 @@ try {
 		$db->commit();
 	}
 	
-	if ($exec == '選択削除実行') {
+	if ($exec == '選択コマ削除') {
 		$db->beginTransaction();
 		$sql = "DELETE FROM tbl_season_schedule WHERE date=? AND stime=? AND teacher_no=? AND member_no=?";
 		$stmt = $db->prepare($sql);
@@ -348,6 +356,7 @@ try {
 		}
 
 		foreach ($members as $mem=>&$member) {
+			if ($place_select && $member['place']!=$place_select)	continue;
 			$k = count($member['subject_id']);
 			for ($j=0;$j<$k;$j++) {$break_flag[$j] = 1;}
 			while (1) {
@@ -394,6 +403,7 @@ try {
 					$teachers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					foreach ($teachers as $teacher) {
 						$teacher_id = $teacher['teacher_id'];
+						if (array_search($teacher_id, $teachers_select) === false)	continue;
 						$i = array_search($teacher_id, $teacher_slot[$date]);
 						if ($i===false) continue;
 //echo "$i,$date,$mem,$teacher_id.<br>";
@@ -475,6 +485,7 @@ try {
 					$teachers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					foreach ($teachers as $teacher) {
 						$teacher_id = $teacher['teacher_id'];
+						if (array_search($teacher_id, $teachers_select) === false)	continue;
 						$i = array_search($teacher_id, $teacher_slot[$date]);
 						if ($i===false) continue;
 //echo "$i,$date,$mem,$teacher_id.<br>";
@@ -579,6 +590,7 @@ if (!$edit) {
 }
 ?>
 <a href="menu.php">メニューへ戻る</a>
+<br>
 
 <?php
 	if (count($errArray) > 0) {
@@ -601,6 +613,7 @@ if ($class_type=='sat_sun_class') {
 <input type="hidden" name="edit" value="<?= $edit ?>">
 <input type="hidden" name="view_type" value="<?= $view_type ?>">
 <input type="hidden" name="lms_mode" value="<?=$lms_mode?>">
+<input type="hidden" name="place_select" value="<?=$place_select?>">
 	<h3><input type="submit" name="button" value="前月">
 	&nbsp;&nbsp;&nbsp;&nbsp;<?= $year?>年<?= $month ?>-<?= $m3 ?>月&nbsp;&nbsp;&nbsp;&nbsp;
 	<input type="submit" name="button" value="翌月"></h3>
@@ -609,6 +622,7 @@ if ($class_type=='sat_sun_class') {
 }
 ?>
 
+<br>
 <form method="post" name="form1" action="season_class_schedule.php">
 <input type="hidden" name="y" value="<?= $year ?>">
 <input type="hidden" name="m" value="<?= $month ?>">
@@ -616,6 +630,11 @@ if ($class_type=='sat_sun_class') {
 <input type="hidden" name="edit" value="<?= $edit ?>">
 <input type="hidden" name="view_type" value="<?= $view_type ?>">
 <input type="hidden" name="lms_mode" value="<?=$lms_mode?>">
+<input type="hidden" name="place_select" value="<?=$place_select?>">
+
+校舎選択：　
+<?php disp_pulldown_menu($places, 'place_select', $place_select,'document.form1.submit()'); ?>
+<br>
 <br>
 
 <?php
@@ -640,6 +659,7 @@ $member_list_name = array_column($member_list,'name','no');
 if ($edit) {
 echo "<table border=\"1\"><tr><th>生徒名</th><th>コース</th><th>授業日数（割り当て済み日数)</th><th>科目別授業時間（割り当て済み時間）</th></tr>";
 foreach ($members as $no=>$member) {
+	if ($place_select && $member['place'] != $place_select)	continue;
 	echo "<tr><td>{$member_list[$no]['name']}</td>";
 	echo "<td>";
 	if ($member['season_course_id'][0]==LESSON60) { echo "60分授業"; }
@@ -657,11 +677,13 @@ foreach ($members as $no=>$member) {
 		echo "&nbsp;{$subject_list[$subject_id0]}&nbsp;{$member['subject_time'][$key]}（{$member['lesson_sum'][$subject_id0]}）&nbsp;";
 	}
 	echo "</td></tr>";
-	$members_name[] = $member_list[$no]['name'];
+	if (!$place_select || $member['place'] == $place_select)	$members_name[] = $member_list[$no]['name'];
 }
 echo "</table><br>";
 
 if ($exec == '自動割り当て実行') {
+	foreach ($teachers_select as $value)
+		echo "<input type=\"hidden\" name=\"teachers_select[]\" value=\"$value\">";
 ?>
 <input type="hidden" name="auto_flag" value="1">
 <input type="submit" name="exec" value="保存">&nbsp;&nbsp;
@@ -683,10 +705,19 @@ if ($exec == '自動割り当て実行') {
 </td></tr>
 -->
 </table>
+<input type="submit" name="exec" value="選択コマ登録">&nbsp;&nbsp;
+<br><br>
+自動割り当て対象講師：
+<?php
+foreach ($teachers_name1 as $key=>$name) {
+	$checked_flag = (array_search($teachers_id1[$key], $teachers_select)!==false)? 'checked': '';
+	echo "<input type=\"checkbox\" name=\"teachers_select[]\" value=\"{$teachers_id1[$key]}\" $checked_flag>$name &nbsp;&nbsp;";
+}
+?>
 <br>
-<input type="submit" name="exec" value="自動割り当て実行">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="submit" name="exec" value="選択登録実行">&nbsp;&nbsp;
-<input type="submit" name="exec" value="選択削除実行">&nbsp;&nbsp;
+<input type="submit" name="exec" value="自動割り当て実行">
+<br><br>
+<input type="submit" name="exec" value="選択コマ削除">&nbsp;&nbsp;
 <input type="button" value="全選択解除" onclick="clearCheckAll()">&nbsp;&nbsp;
 <br>
 <br>
@@ -729,13 +760,15 @@ foreach($date_list as $date) {
 			$tmpstr .= "<td width=100 rowspan=\"".max(count($teacher_slot[$date]),1)."\">";
 			foreach ($members as $no=>&$mem) {
 				$key = array_search($date,$mem['date']);
-				if ($key!==FALSE) {
-					if ($mem['lesson'][$key]>=($mem['season_course_id'][$key]==LESSON120?2:1) || $hokou_mode) {
-						$tmpstr .= "<font color=black>";
-					} else {
-						$tmpstr .= "<font color=red>";						
+				if (!$place_select || $mem['place'] == $place_select) {
+					if ($key!==FALSE) {
+						if ($mem['lesson'][$key]>=($mem['season_course_id'][$key]==LESSON120?2:1) || $hokou_mode) {
+							$tmpstr .= "<font color=black>";
+						} else {
+							$tmpstr .= "<font color=red>";						
+						}
+						$tmpstr .= $member_list[$no]['name']."</font><br>";
 					}
-					$tmpstr .= $member_list[$no]['name']."</font><br>";
 				}
 				$mem['lesson_length'] = 0;
 			}
@@ -849,7 +882,8 @@ foreach($date_list as $date) {
 						$err_st |= TEACHER_SUBJECT_ERROR;
 					}
 					
-					$tmpstr .= "<td bgcolor=\"$bgcolor\" colspan=\"$colspan\">";
+					$disp_option = (!$place_select || $members[$schedule['member_no']]['place']==$place_select)? '': 'style="display:none"';
+					$tmpstr .= "<td bgcolor=\"$bgcolor\" colspan=\"$colspan\" $disp_option>";
 					if ($err_st) { $tmpstr .= '<font color=red>'; }
 					$tmpstr .= "<input type=\"checkbox\" name=\"lessons[]\" value=\"{$date}-{$stime}-{$schedule['teacher_no']}-{$schedule['member_no']}\" onclick=\"lclick(this.checked)\">";
 					$tmpstr .= "{$schedule['member_name']}／{$schedule['subject_name']}／{$schedule['teacher_name']}";

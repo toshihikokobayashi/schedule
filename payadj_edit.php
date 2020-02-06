@@ -331,7 +331,7 @@ function input_check() {
 		<th><font color="red">*</font>月</th>
 		<th><font color="red">*</font>項目名</th>
 		<?php if ($employee_type == TEACHER)	echo '<th><font color="red">*</font>教室</th>'; ?>
-		<th><font color="red">*</font>種別</th>
+		<th><font color="red">*</font>税金</th>
 		<th><font color="red">*</font>金額</th>
 		<th>備考</th>
 	</tr>
@@ -355,8 +355,8 @@ function input_check() {
 		?>
 		<td align="center">
 		<select name="tax_flag">
-		<option value="1" <?= ($payadj_array["tax_flag"])?"selected":"" ?>>給料</option>
-		<option value="0" <?= ($payadj_array["tax_flag"])?"":"selected" ?>>交通費</option>
+		<option value="1" <?= ($payadj_array["tax_flag"])?"selected":"" ?>>課税</option>
+		<option value="0" <?= ($payadj_array["tax_flag"])?"":"selected" ?>>非課税</option>
 		</select>
 		</td>
 		<td align="right">
@@ -392,7 +392,7 @@ if (count($payadj_list) > 0) {
 	<tr>
 		<th>年月</th><th>項目名</th>
 		<?php if ($employee_type == TEACHER)	echo '<th>教室</th>'; ?>
-		<th>種別</th><th>金額</th><th>備考</th><th>&nbsp;</th>
+		<th>税金</th><th>金額</th><th>備考</th><th>&nbsp;</th>
 	</tr>
  	<?php
 	foreach ($payadj_list as $item) {
@@ -403,7 +403,7 @@ if (count($payadj_list) > 0) {
 		<?php	if ($employee_type == TEACHER) { ?>
 		<td align="center" width="80"><?=$lesson_list[$item["lesson_id"]]?></td>
 		<?php } ?>
-		<td align="center"><?= $item["tax_flag"]?"給料":"交通費" ?></td>
+		<td align="center"><?= $item["tax_flag"]?"課税":"非課税" ?></td>
 		<td align="right" width="80"><?=number_format($item["price"])?> 円</td>
 		<td align="left" width="550"><?=$item["memo"]?></td>
 		<td align="center" width="60">

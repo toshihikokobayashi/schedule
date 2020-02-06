@@ -416,7 +416,7 @@ function setPlaceMenu() {
 <h3>生徒の登録 - その他項目</h3>
 <a href="student_fee_list.php">生徒の登録 - 生徒一覧へ</a>&nbsp;&nbsp;
 -->
-<h3>年月別一覧 - その他項目</h3>
+<h3>年月別一覧 - 月謝調整</h3>
 <table>
 <td><a href='others_edit_ym.php?y=<?= $y1 ?>&m=<?= $m1 ?>'>先月</a></td>
 <td align="center" width="400"><a href="menu.php">メニューへ戻る</a></td>

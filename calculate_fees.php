@@ -1,12 +1,7 @@
 <?php
-ini_set( 'display_errors', 0 );
-//ini_set('display_errors', 'on');
-//error_reporting(E_ALL);
-require_once("./const/const.inc");
-require_once("./func.inc");
-require_once("./const/login_func.inc");
-require_once ("./array_column.php");
-//$result = check_user($db, "1");
+// calculate_fees class define include file
+
+get_season_fee_table($db);
 
 class calculate_fees {
 
@@ -37,6 +32,7 @@ class calculate_fees {
 	var $event_list;
 
 	public function __construct() {
+		global $db;
 		$this->total_hours = 0;
 		$this->total_fees = 0;
 		$this->membership_fee = 0;
@@ -54,7 +50,8 @@ class calculate_fees {
 		$this->buying_textbook_list = array();
 		$this->others_list = array();
 		$this->divided_payment_list = array();
-		connect_DB($this->db);	// func.inc
+		$this->db = $db;
+//		connect_DB($this->db);	// func.inc
 	}
 
 	// 月謝計算のメイン
@@ -63,8 +60,6 @@ class calculate_fees {
 
 	$year1 = $year; $month1 = $month-1; if ($month1<1) { $year1--; $month1=12; }
 	
-	get_season_fee_table($this->db);
-
 	if ($month!=1 && $month!=4 && $month!=8) {
 		$date_list = $sat_sun_class_date_list;
 		$date_list_string = "("; $flag=0;
@@ -486,7 +481,7 @@ try{
 	// 教室ごとに明細情報を取得するメソッド
 	private function calculate_lesson_detail(&$db, $member, $year, $month) {
 		global	$season_course_list,$date_list,$sat_sun_class_date_list,$date_list_string;
-		global $time_list,$default_stime,$default_etime,$course_id,$lesson_fee_table,$exercise_fee_table;
+		global $time_list,$default_stime,$default_etime,$lesson_fee_table,$exercise_fee_table;
 		$lesson_list 	= get_lesson_list($db);
 		$subject_list = get_subject_list($db);
 		$course_list 	= get_course_list($db);
@@ -521,12 +516,6 @@ try{
 		$tmp_event_list = get_event_list($db, $param_array, $value_array, $order_array);
 */
 //		if ($month==1 || ($year==2017 && $month==3) || $month==4 || $month==8) {
-			switch ($month) {
-			case 1: $course_id=5; break;
-//			case 3: $course_id=6; break;
-			case 4: $course_id=6; break;
-			case 8: $course_id=4; break;
-			}
 			$event_item = array(
 				'event_id'				=>'0',
 				'member_no'				=>$member['no'],
@@ -542,7 +531,7 @@ try{
 				'diff_hours'			=>'',
 				'lesson_id'				=>'',
 				'subject_id'			=>'',
-				'course_id'				=>$course_id,
+				'course_id'				=>'',
 				'teacher_id'			=>'',
 				'place_id'				=>'0',
 				'alternative_flag'=>'0',
@@ -629,7 +618,7 @@ try{
 				$stmt->execute(array($member['no']));
 				$rslt = $stmt->fetch(PDO::FETCH_ASSOC);
 				$grade = $rslt['grade'];
-				if (get_season_fee_type($db, $member['no']) && date('n')>=4 && $month==4) $grade--; 
+				if ($season_fee_type && date('n')>=4 && $month==4) $grade--; 
 				
 				$stmt = $this->db->prepare("SELECT min(fee) FROM tbl_fee WHERE member_no=? AND lesson_id=1 AND course_id=1");
 				$stmt->execute(array($member['no']));
@@ -654,24 +643,11 @@ try{
 						$date_count_index = $date_count_index0;
 						$sat_sun_flag = 0;
 					}
-					$lesson_fee0 = $lesson_fee_table[$season_fee_type][$grade][$item['season_course_id']];
+					if ($member['jyukensei'])
+						$lesson_fee0 = $lesson_fee_table[$season_fee_type][$grade][$item['season_course_id']][1];
+					else
+						$lesson_fee0 = $lesson_fee_table[$season_fee_type][$grade][$item['season_course_id']][0];
 					$exercise_fee = $exercise_fee_table[$season_fee_type][$item['season_course_id']][$date_count_index];		
-					if ($member['jyukensei']) {
-						if (get_season_fee_type($db, $member['no'])) {
-							switch ($grade) {
-							case 5:
-							case 6:	
-							case 7:	$lesson_fee0 += 1000; break;
-							}
-						} else {
-							// 小４/小５受験生 +500円　小６受験生　+1000円
-							switch ($grade) {
-							case 5:
-							case 6:	$lesson_fee0 +=  500; break;
-							case 7:	$lesson_fee0 += 1000; break;
-							}
-						}
-					}
 					if ($lesson_fee1 && $lesson_fee1!=0 && $lesson_fee1 < $lesson_fee0) { $lesson_fee0 = $lesson_fee1; }
 					if ($item['date'] != $last_date) {
 						// 演習計算
@@ -749,6 +725,17 @@ try{
 					$event_item['sat_sun_flag'] = $sat_sun_flag;
 					
 					$tmp_event_list[$exercise_index]['diff_hours'] -= $event_item['diff_hours']	;
+					
+					if ($sat_sun_flag) {
+						$event_item['course_id']=null;
+					} else {
+						switch ($month) {
+						case 1: $event_item['course_id']=5; break;
+						case 4: $event_item['course_id']=6; break;
+						case 8: $event_item['course_id']=4; break;
+						default:$event_item['course_id']=''; break;
+						}
+					}
 					
 					array_push( $tmp_event_list, $event_item );
 				}

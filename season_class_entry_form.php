@@ -119,10 +119,12 @@ if (is_uploaded_file($_FILES["upfile"]["tmp_name"])) {
 				$header = $sqarray;
 				$name_index = array_search('生徒氏名',$header);
 				$course_index = array_search('コース',$header);
+				$date_index = array_search('希望日時',$header);
 				$subject_index = array_search('希望授業科目',$header);
-				$date_index = array();
+				$place_index = array_search('希望校舎',$header);
 				
 				if ($class_type == 'sat_sun_class') {
+					$date_index = array();
 					foreach ($header as $key=>$title) {
 						if (preg_match('|希望日時 \[(\d+)/(\d+)|u',$title,$matches)) {
 							$year1 = $year;
@@ -176,6 +178,7 @@ if (is_uploaded_file($_FILES["upfile"]["tmp_name"])) {
 			}
 			
 			$name = $sqarray[$name_index];
+			$place = $sqarray[$place_index];
 			if (!$name) { continue; }
 			echo "{$name}: ";
 			$stmt = $db->prepare("SELECT no,name,del_flag,grade FROM tbl_member");
@@ -211,7 +214,7 @@ if (is_uploaded_file($_FILES["upfile"]["tmp_name"])) {
 			}
 
 			if ($class_type != 'sat_sun_class') {
-				preg_match_all('|\d{1,2}/\d{1,2}|',$sqarray[7],$dates);
+				preg_match_all('|\d{1,2}/\d{1,2}|',$sqarray[$date_index],$dates);
 				$dates1 = array();
 				foreach ($dates[0] as $date) {
 					$date0 = explode('/',$date);
@@ -308,9 +311,9 @@ if (is_uploaded_file($_FILES["upfile"]["tmp_name"])) {
 			foreach ($dates1 as $key=>$date) {
 				if (array_search($date, $date_list1) === false) continue;
 				if ($date <= $today) continue;
-				$sql = "INSERT INTO tbl_season_class_entry_date VALUES (?, ?, ?, ?, ?, now(), now(), ?, ?, ?, ?, ?)";
+				$sql = "INSERT INTO tbl_season_class_entry_date VALUES (?, ?, ?, ?, ?, now(), now(), ?, ?, ?, ?, ?, ?)";
 				$stmt = $db->prepare($sql);
-				$stmt->execute(array($member_no, $season_course_id, $date, '11:00', '', $stimes1[$key], $etimes1[$key], '', '', 0));
+				$stmt->execute(array($member_no, $season_course_id, $date, '11:00', '', $stimes1[$key], $etimes1[$key], '', '', 0, $place));
 			}
 			
 			// 受講日以外のスケジュール削除

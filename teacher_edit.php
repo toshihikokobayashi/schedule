@@ -18,7 +18,7 @@ $errArray = array();
 
 $teacher = array();
 if ($teacher_acount) {
-	if ($month<10) $month = '0'.$month;
+	$month = str_pad($month, 2, 0, STR_PAD_LEFT);
 	$teacher_id = $_SESSION['ulogin']['teacher_id'];
 } else {
 	$teacher_id = trim($_POST["no"]);
@@ -841,6 +841,8 @@ if ($teacher['transport_limit']) echo '給与の1割まで';
 		<input type="button" onclick="window.close()" value="閉じる">
 <?php 
 }
+
+$month = $month+0;
 if ($teacher_acount == 1) {
 	require_once("./check_work_time.php");
 } else if ($teacher_acount == 2) {

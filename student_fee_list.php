@@ -138,6 +138,12 @@ function edit_others(no) {
 	document.forms["student_list"].submit();
 }
 
+function total_fees(no) {
+	document.forms["student_list"].elements["no"].value = no;
+	document.forms["student_list"].action = "student_total_fees.php";
+	document.forms["student_list"].submit();
+}
+
 function edit_divided_payment(no) {
 	document.forms["student_list"].elements["no"].value = no;
 	document.forms["student_list"].elements["mode"].value = "new";
@@ -253,7 +259,7 @@ function dispZenseito(flag) {
 <th>入会月</th>
 <!--<th>学年</th>-->
 <th>教室</th>
-<th colspan="7">登録・変更</th>
+<th colspan="8">登録・変更</th>
 </tr>
 	<?php
 			foreach ($student_list as $item) {
@@ -330,7 +336,7 @@ function dispZenseito(flag) {
 -->
 			</td>
 			<td align="center">
-			<input type="button" value="その他項目" onclick="edit_others('<?= $item['no']?>')"> <?php /* ボタンにはnameを付けないこと。jsに渡すnoは'で囲むことStringとして渡すため*/ ?>
+			<input type="button" value="月謝調整" onclick="edit_others('<?= $item['no']?>')"> <?php /* ボタンにはnameを付けないこと。jsに渡すnoは'で囲むことStringとして渡すため*/ ?>
 <!--
 			<a href="others_edit.php?no=<?= $item["no"]?>&y=<?= $year ?>&m=<?= $month ?>" target="_blank">登録・変更</a>
 -->
@@ -345,6 +351,9 @@ function dispZenseito(flag) {
 			<a href='divided_payment_list.php?no=<?=$item['no']?>' target="_blank">変更・削除</a>
 -->
 			<input type="button" value="授業料分割支払" onclick="edit_divided_payment('<?= $item['no']?>')"> <?php /* ボタンにはnameを付けないこと。jsに渡すnoは'で囲むことStringとして渡すため*/ ?>
+			</td>
+			<td align="center">
+			<input type="button" value="受講料合計" onclick="total_fees('<?= $item['no']?>')"> <?php /* ボタンにはnameを付けないこと。jsに渡すnoは'で囲むことStringとして渡すため*/ ?>
 			</td>
 		</tr>
 	<?php

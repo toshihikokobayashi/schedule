@@ -179,7 +179,7 @@ function blankCheck() {
 				<input type="text" name="m" value="<?php echo $month; ?>" size="4">月分&nbsp;
 				<input type="submit" value="表示">
 				</form>
-			<li><b>その他項目</b><br>
+			<li><b>月謝調整（その他項目）</b><br>
 				<form method="post" action="others_edit_ym.php">
 				<input type="text" name="y" value="<?php echo $year; ?>" size="4">年&nbsp;
 				<input type="text" name="m" value="<?php echo $month; ?>" size="4">月分&nbsp;

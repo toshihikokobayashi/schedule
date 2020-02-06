@@ -393,7 +393,7 @@ function setPlaceMenu() {
 <div id="content" align="center">
 
 
-<h3>生徒の登録 - その他項目</h3>
+<h3>生徒の登録 - 月謝調整</h3>
 
 <?php if (!$lms_mode) { ?>
 <a href="student_fee_list.php">生徒の登録 - 生徒一覧へ</a>&nbsp;&nbsp;
@@ -503,7 +503,7 @@ function setPlaceMenu() {
 		</td>
 		<td align="center">
 <?php
-	  echo disp_pulldown_menu($charge_list, "charge", "あり");
+	  echo disp_pulldown_menu($charge_list, "charge", $charge_list[$others_array["charge"]]);
 ?>
 		</td>
 		<td align="left">

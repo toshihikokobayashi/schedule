@@ -11,12 +11,18 @@ set_time_limit(0);
 $errArray = array();
 $errFlag = 0;
 
+$student_id = $_POST['no'];
+
 try {
 
 $student_list = array();
 $param_array = array("tbl_member.kind = ?");
 $value_array = array("3");
 $order_array = array("tbl_member.furigana asc");
+if ($student_id) {
+	$param_array[] = "tbl_member.no = ?";
+	$value_array[] = "$student_id"; 
+}
 $member_list = get_simple_member_list($db, $param_array, $value_array, $order_array, 1);
 
 ?>

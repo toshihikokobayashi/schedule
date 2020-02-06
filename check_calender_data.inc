@@ -5,6 +5,11 @@ define( "NOT_CONFIRMED_ERR_MSG2", "「(Not Defined)」入力エラー" );
 define( "NOT_CONFIRMED_ERR_MSG3", "「(Not Confirmed)」入力エラー" );
 define( "NOT_CONFIRMED_ERR_MSG4", "「(temporary)」入力エラー" );
 
+$sql = "SELECT * FROM tbl_season_schedule s LEFT OUTER JOIN tbl_member m ON s.member_no=m.no WHERE s.date IN {$date_list_string}";
+$stmt = $db->prepare($sql);
+$stmt->execute();
+$season_schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 if ($nocheck) $result=true;
 
 if ($result == false) {
@@ -242,7 +247,8 @@ if ($result) {
 
 					// 20160119 グループコース
 					$course_list = get_course_list($db);
-					if (count($errArray) < 1) {
+/*  エラー判定削除	2019/12/17 T.Katsu
+				if (count($errArray) < 1) {
 						foreach ($course_list as $course) {
 							if ($course["course_id"] == "1" || $course["course_id"] == "2" || $course["course_id"] == "3") {
 								continue;
@@ -257,7 +263,7 @@ if ($result) {
 							}
 						}
 					}
-
+*/
 					// 20150827追加 「キャンセル」と入力されている場合、エラーとする。（キャンセルでなくて休み１と休み２を入力してもらう）
 					if (strpos($event["cal_evt_summary"], "キャンセル") !== FALSE) {
  						$error_event["message"] = "「キャンセル」入力エラー";
@@ -319,6 +325,18 @@ if ($result) {
 								$errArray[] = $error_event;
 						}
 					}
+					
+					foreach ($season_schedules as $season_schedule) {
+						if ($season_schedule['teacher_no']!=$event['teacher_id'])	continue;
+						$stimestamp = DateTime::createFromFormat('Y/m/d H:i', "{$season_schedule['date']} {$season_schedule['stime']}")->getTimestamp();
+						$etimestamp = DateTime::createFromFormat('Y/m/d H:i', "{$season_schedule['date']} {$season_schedule['etime']}")->getTimestamp();
+						if (($event['start_timestamp']<=$stimestamp && $stimestamp<$event['end_timestamp']) ||
+								($event['start_timestamp']> $stimestamp && $etimestamp>$event['start_timestamp'])) {
+	 							$error_event["message"] = "季節講習・土日講習重複エラー";
+								$errArray[] = $error_event;
+								}
+					}
+					
 					$before_event = $event;
 
 /*

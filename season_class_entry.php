@@ -5,6 +5,8 @@ require_once("./func.inc");
 require_once("./const/login_func.inc");
 $result = check_user($db, "1");
 
+$places_array = array("八王子北口校舎","国立校舎");
+
 $errFlag = 0;
 $errArray = array();
 
@@ -40,6 +42,8 @@ if ($class_type == 'sat_sun_class') {
 	$page_title = "土日講習";
 } else {
 	$page_title = "$season_class_title";
+	$default_stime_sat = $default_stime;
+	$default_etime_sat = $default_etime;
 }
 
 if ($class_type=='sat_sun_class') {
@@ -78,6 +82,7 @@ $stime_array         = $_POST["stime"];
 $etime_array         = $_POST["etime"];
 $attend_status_array = $_POST["attend_status"];
 $furikae_array       = $_POST["furikae_status"];
+$place							 = $_POST["place"];
 
 $subject_time_array = array_map(function($p1,$p2){return $p1+$p2/10;}, $subject_time0_array, $subject_time1_array);
 
@@ -97,7 +102,7 @@ if ($action == 'add' && $date_list_string && $date_list_string1) {
 		$db->query($sql);
 		
 		$i=0;
-		$sql = "INSERT INTO tbl_season_class_entry_date VALUES (?, ?, ?, ?, ?, now(), now(), ?, ?, ?, ?, ?)";
+		$sql = "INSERT INTO tbl_season_class_entry_date VALUES (?, ?, ?, ?, ?, now(), now(), ?, ?, ?, ?, ?, ?)";
 		$stmt = $db->prepare($sql);
 		foreach ($date_list as $datestring ) {
 			if (array_search($datestring, $date_list1) !== false) {
@@ -107,11 +112,11 @@ if ($action == 'add' && $date_list_string && $date_list_string1) {
 			}
 			if ($entry_flag_array && array_search($i, $entry_flag_array) !== false ) {
 				$stmt->execute(array($student["no"], $season_course_id0, $datestring, '', '',
-									$stime_array[$i], $etime_array[$i], $attend_status_array[$i], $furikae_array[$i], false));
+									$stime_array[$i], $etime_array[$i], $attend_status_array[$i], $furikae_array[$i], false, $place));
 			}
 			if ($furikae_flag_array && array_search($i, $furikae_flag_array) !== false ) {
 				$stmt->execute(array($student["no"], $season_course_id0, $datestring, '', '',
-									$stime_array[$i], $etime_array[$i], $attend_status_array[$i], $furikae_array[$i], true));
+									$stime_array[$i], $etime_array[$i], $attend_status_array[$i], $furikae_array[$i], true, $place));
 			}
 			$i++;
 		}
@@ -178,6 +183,8 @@ try{
 	$stmt = $db->prepare($sql);
 	$stmt->execute(array($student['no']));
 	$dates = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	$place = $dates[0]['place'];
+	if ($place && array_search($place, $places_array)===false)	$places_array[]=$place;
 	foreach ($dates as $entry) {
 		if (array_search($entry['date'], $date_list1) !== false) $season_course_id = $entry['season_course_id'];
 		$keys = array_keys(array_column($teacher_attend_report,'date'), $entry['date']);
@@ -237,12 +244,21 @@ var current_stime2=2;
 function selectChange(obj,num)
 {
 	var value = obj.options[obj.selectedIndex].value;
+	var dates = document.getElementsByName('dates[]');
+	var default_stime, default_etime;
+	if (dates[num].innerHTML.indexOf('土') < 0) {
+		default_stime = <?= $default_stime+1 ?>;
+		default_etime = <?= $default_etime+1 ?>;
+	} else {
+		default_stime = <?= $default_stime_sat+1 ?>;
+		default_etime = <?= $default_etime_sat+1 ?>;
+	}
 	if (obj.selectedIndex == 0) {
 		document.getElementsByName('stime[]')[num].selectedIndex=0;
 		document.getElementsByName('etime[]')[num].selectedIndex=0;
 	} else {
-		document.getElementsByName('stime[]')[num].selectedIndex=<?= $default_stime+1 ?>;
-		document.getElementsByName('etime[]')[num].selectedIndex=<?= $default_etime+1 ?>;
+		document.getElementsByName('stime[]')[num].selectedIndex=default_stime;
+		document.getElementsByName('etime[]')[num].selectedIndex=default_etime;
 	}
 }
 function stime1Change(obj)
@@ -267,9 +283,18 @@ function updateLessonTime()
 	var furikae_flag = document.getElementsByName('furikae_flag[]');
 	var stimes = document.getElementsByName('stime[]');
 	var etimes = document.getElementsByName('etime[]');
+	var dates = document.getElementsByName('dates[]');
+	var default_stime, default_etime;
 	for (var i=0;i<entry_flag.length;i++) {
+		if (dates[i].innerHTML.indexOf('土') < 0) {
+			default_stime = <?= $default_stime+1 ?>;
+			default_etime = <?= $default_etime+1 ?>;
+		} else {
+			default_stime = <?= $default_stime_sat+1 ?>;
+			default_etime = <?= $default_etime_sat+1 ?>;
+		}
 		if (entry_flag[i].checked || furikae_flag[i].checked) {
-			if ((stimes[i].selectedIndex!=<?= $default_stime+1 ?>) || (stimes[i].selectedIndex!=<?= $default_stime+1 ?>)) {
+			if ((stimes[i].selectedIndex!=default_stime) || (etimes[i].selectedIndex!=default_etime)) {
 				stimes[i].parentNode.style='background-color:#FFFFAA;';
 			} else {
 				stimes[i].parentNode.style='background-color:#FFFFFF;';
@@ -284,12 +309,21 @@ function entryCheck( obj, num )
 	var etimes = document.getElementsByName('etime[]');
 	var attend_st = document.getElementsByName('attend_status[]');
 	var t_attend_st = document.getElementsByName('teacher_attend_status[]');
+	var dates = document.getElementsByName('dates[]');
+	var default_stime, default_etime;
+	if (dates[num].innerHTML.indexOf('土') < 0) {
+		default_stime = <?= $default_stime+1 ?>;
+		default_etime = <?= $default_etime+1 ?>;
+	} else {
+		default_stime = <?= $default_stime_sat+1 ?>;
+		default_etime = <?= $default_etime_sat+1 ?>;
+	}
 	if (obj.checked) {
 		furikae_flag[num].style='display:none;';
 		stimes[num].parentNode.style='';
 		attend_st[num].parentNode.style='';
-		stimes[num].selectedIndex=<?= $default_stime+1 ?>;
-		etimes[num].selectedIndex=<?= $default_etime+1 ?>;
+		stimes[num].selectedIndex=default_stime;
+		etimes[num].selectedIndex=default_etime;
 		t_attend_st[num].style='';
 	} else {
 		furikae_flag[num].style='';
@@ -310,6 +344,15 @@ function furikaeCheck( obj, num )
 	var attend_st = document.getElementsByName('attend_status[]');
 	var t_attend_st = document.getElementsByName('teacher_attend_status[]');
 	var furikae_st = document.getElementsByName('furikae_status[]');
+	var dates = document.getElementsByName('dates[]');
+	var default_stime, default_etime;
+	if (dates[num].innerHTML.indexOf('土') < 0) {
+		default_stime = <?= $default_stime+1 ?>;
+		default_etime = <?= $default_etime+1 ?>;
+	} else {
+		default_stime = <?= $default_stime_sat+1 ?>;
+		default_etime = <?= $default_etime_sat+1 ?>;
+	}
 	if (obj.checked) {
 		entry_flag[num].style='display:none;';
 		stimes[num].parentNode.style='';
@@ -317,8 +360,8 @@ function furikaeCheck( obj, num )
 		attend_st[num].options[1].text='振替';
 		attend_st[num].parentNode.style='';
 		furikae_st[num].parentNode.style='';
-		stimes[num].selectedIndex=<?= $default_stime+1 ?>;
-		etimes[num].selectedIndex=<?= $default_etime+1 ?>;
+		stimes[num].selectedIndex=default_stime;
+		etimes[num].selectedIndex=default_etime;
 		entry_flag[num].parentNode.parentNode.style='background-color:#CCCCFF;';
 		t_attend_st[num].style='';
 	} else {
@@ -561,6 +604,10 @@ function inputCheck()
 		<th>　コース：　</th>
 		<td><?php disp_course_menu($season_course_list, "season_course_id", $season_course_id) ?></td>
 	</tr>
+	<tr>
+		<th>　校舎：　</th>
+		<td><?php disp_pulldown_menu($places_array, "place", $place) ?></td>
+	</tr>
 	</table>
 	<br>
 	<table border="1" id="table2">
@@ -637,7 +684,7 @@ function inputCheck()
 	<font color="black" size="-1">
 	<span style="background-color:#FFCCCC;">＊ 背景色薄い赤は休みの日です。</span><br>
 	<span style="background-color:#CCCCFF;">＊ 背景色薄い青は振替日です。</span><br>
-	<span style="background-color:#FFFFAA;">＊ 背景色薄い黄色は"11:00～16:00"以外の授業時間帯です。</span><br>
+	<span style="background-color:#FFFFAA;">＊ 背景色薄い黄色は"11:00～16:00"、"13:00～18:00"以外の時間帯です。</span><br>
 	</font>
 	</div>
 	<br>

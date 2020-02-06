@@ -167,6 +167,13 @@ function get_event_param($db, $event, &$errArray, $target_teacher_id) {
 	$teacher_id = 0;
 	$tmp_event_summary = str_replace(array("　", "（", "）", "：", "︰", "＊"), array(" ", "(", ")", ":", ":", "*"), trim($event['event_summary']));
 	$tmp_event_summary = str_replace(array(" "), array(""), $tmp_event_summary);// 半角スペースも除去
+	
+	// 20200122 名前の変更
+	//  旧：Nix Cruz　→　新：Nina Cruz
+	//  旧：田中 要介　→　新：田中 耕一郎
+	$tmp_event_summary = str_replace(array("NixCruz"), array("NinaCruz"), $tmp_event_summary);
+	$tmp_event_summary = str_replace(array("田中要介"), array("田中耕一郎"), $tmp_event_summary);
+	
 	foreach ($teacher_list as $teacher) {
 		$name = str_replace(array("　", "（", "）", "：", "︰", "＊"), array(" ", "(", ")", ":", ":", "*"), trim($teacher["name"]));
 		$name = str_replace(array(" "), array(""), $name);// 半角スペースも除去

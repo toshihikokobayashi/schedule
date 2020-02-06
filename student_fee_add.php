@@ -380,7 +380,7 @@ function add_check() {
 
 	<div class="menu_box">
 		<font color="blue" size="-1">
-		※&nbsp;科目について、「英会話」と「ピアノ」の場合は、「科目なし」を選択してください。<br>
+<!--		※&nbsp;科目について、「英会話」と「ピアノ」の場合は、「科目なし」を選択してください。<br>	-->
 		※&nbsp;１時間あたりの料金について、「ファミリー」の場合は、全員が出席した時の合計料金を入力してください。<br>
 		※&nbsp;ファミリー&nbsp;一人欠席時引く金額は、「ファミリー」で一人が欠席した時に引く金額を入力してください。<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;ファミリーでない場合は、空白または「0」としてください。<br>
@@ -474,6 +474,7 @@ function add_check() {
 	</tr>
 </table>
 <br>
+<!--
 <table><tr><th>月謝</th></tr></table>
 	<table border="1" id="m_fee_table">
 	<tr>
@@ -544,6 +545,7 @@ function add_check() {
 		</td>
 	</tr>
 </table>
+-->
 </form>
 </div>
 

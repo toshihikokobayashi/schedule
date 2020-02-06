@@ -683,7 +683,11 @@ if (count($price_list) > 0) {
 		$price_list['lesson_place'][$lesson_id][$key0] = $sum0;
 	}
 	$place_list[$key0]['name'] = '北口校合計';
-	foreach ($place_list as $item0)	echo "<th class=\"meisai\">{$item0['name']}</th>";
+	foreach ($place_list as $key=>$item0)	{
+		if ($key==11)	continue;
+		if ($key==3)	echo "<th class=\"meisai\">{$place_list[11]['name']}</th>";
+		echo "<th class=\"meisai\">{$item0['name']}</th>";
+	}
 	echo "<th class=\"meisai\">全校舎合計</th>";
 	$lesson_num = count($lesson_list);
 ?>
@@ -697,6 +701,12 @@ if (count($price_list) > 0) {
 		<td width="100" align="left" class="meisai"><?= $lesson_list[$lesson_id] ?></td>
 <?php
 			foreach ($place_list as $key1=>$item1)	{
+				if ($key1==11)	continue;
+				if ($key1==3)	{
+					echo "<td width=\"100\" align=\"right\" class=\"meisai\">".number_format($price[11])."</td>";
+					$total_fees_place[11] += $price[11];
+					if (11 != $key0)	$rowtotal += $price[11];
+				}
 				echo "<td width=\"100\" align=\"right\" class=\"meisai\">".number_format($price[$key1])."</td>";
 				$total_fees_place[$key1] += $price[$key1];
 				if ($key1 != $key0)	$rowtotal += $price[$key1];
@@ -709,6 +719,11 @@ if (count($price_list) > 0) {
 <?php
 		$rowtotal = 0;
 		foreach ($place_list as $key1=>$item1) {
+			if ($key1==11)	continue;
+			if ($key1==3)	{
+				echo "<td width=\"100\" align=\"right\" class=\"meisai\">".number_format($total_fees_place[11])."</td>";
+				if (11 != $key0)	$rowtotal += $total_fees_place[11];
+			}
 			echo "<td width=\"100\" align=\"right\" class=\"meisai\">".number_format($total_fees_place[$key1])."</td>";
 			if ($key1 != $key0)	$rowtotal += $total_fees_place[$key1];
 		}

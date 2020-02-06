@@ -126,23 +126,10 @@ try {
 		}
 		
 		$total_fee = 0; $total_fee0 = 0; $total_fee1 = 0;
-		$lesson_fee0 = $lesson_fee_table[$season_fee_type][$grade][$member['season_course_id'][0]];
-		if ($member_list[$member_no]['jyukensei']) {
-			if ($season_fee_type) {
-				switch ($grade) {
-				case 5:
-				case 6:	
-				case 7:	$lesson_fee0 += 1000; break;
-				}
-			} else {
-				// 小４/小５受験生 +500円　小６受験生　+1000円
-				switch ($grade) {
-				case 5:
-				case 6:	$lesson_fee0 +=  500; break;
-				case 7:	$lesson_fee0 += 1000; break;
-				}
-			}
-		}
+		if ($member_list[$member_no]['jyukensei'])
+			$lesson_fee0 = $lesson_fee_table[$season_fee_type][$grade][$member['season_course_id'][0]][1];
+		else
+			$lesson_fee0 = $lesson_fee_table[$season_fee_type][$grade][$member['season_course_id'][0]][0];
 
 		$stmt = $db->prepare("SELECT min(fee) FROM tbl_fee WHERE member_no=? AND lesson_id=1 AND course_id=1 AND fee!=0");
 		$stmt->execute(array($member_no));
