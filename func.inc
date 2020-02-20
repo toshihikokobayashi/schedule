@@ -3,6 +3,10 @@ $result = date_default_timezone_set('Asia/Tokyo');
 session_start();
 $db = null;
 connect_DB($db);
+$dbh = null;
+connect_DBH($dbh);
+$dbc = null;
+connect_DBC($dbc);
 
 mb_regex_encoding("UTF-8");
 
@@ -549,6 +553,29 @@ function connect_DB(&$db,&$lms_db = null) {
 			$lms_db = new PDO(LMS_PDO_DSN, LMS_DB_USER, LMS_DB_PASSWD);
 			$lms_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		}
+	}catch (PDOException $e){
+		//$err_msg = 'Connection failed: ' . $e->getMessage();
+		//exit($err_msg);
+		exit('Connection failed');
+	}
+}
+// データベース接続2
+function connect_DBH(&$dbh) {
+	try{
+		$dbh = new PDO(PDO_DSN2, DB_USER, DB_PASSWD2);
+		$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	}catch (PDOException $e){
+		//$err_msg = 'Connection failed: ' . $e->getMessage();
+		//exit($err_msg);
+		exit('Connection failed');
+	}
+}
+
+// データベース接続3
+function connect_DBC(&$dbc) {
+	try{
+		$dbc = new PDO(PDO_DSN3, DB_USER3, DB_PASSWD3);
+		$dbc->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	}catch (PDOException $e){
 		//$err_msg = 'Connection failed: ' . $e->getMessage();
 		//exit($err_msg);
