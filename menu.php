@@ -384,7 +384,22 @@ function blankCheck() {
 			</form>
 	<br>
 	<br>
+	<h4>■ カレンダーDB取り込み</h4>
+	<form method="get" action="load_calender_data.php">
+	<input type="text" name="year" value="<?php echo $year1; ?>" size="4">年&nbsp;
+	<input type="text" name="month" value="<?php echo $month1; ?>" size="4">月分&nbsp;
+	<input type="submit" value="表示">
+	</form>
 	<br>
+       <h4>■ 季節講習スケジュール取り込み</h4>
+        <form method="post" action="upload_season_calender.php">
+        開始年：<input type="text" name="startyear" value="" size="4">年&nbsp;
+        開始月：<input type="text" name="startmonth" value="" size="4">月&nbsp;
+        終了月（開始月の翌月）：<input type="text" name="endmonth" value="" size="4">月&nbsp;
+        replaceモード：<input type="text" name="mode" value="" size="4">モード&nbsp;
+        <input type="submit" value="表示">
+        </form>
+        <br>	<br>
 	<br>
 <!--
 	<h4>■ サポートセンター</h4>
