@@ -389,8 +389,8 @@ function blankCheck() {
 	<input type="text" name="year" value="<?php echo $year1; ?>" size="4">年&nbsp;
 	<input type="text" name="month" value="<?php echo $month1; ?>" size="4">月分&nbsp;
 	限定する生徒番号（全生徒の場合空白）：
-	<input type="text" name="user_id" value="" size="4">限定する生徒番号（全生徒の場合空白）&nbsp;
-	<input type="submit" value="表示">
+	<input type="text" name="user_id" value="" size="4">&nbsp;
+	<input type="submit" value="実行">
 	</form>
 	<br>
        <h4>■ 季節講習スケジュール取り込み</h4>
