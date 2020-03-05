@@ -117,9 +117,9 @@ try{
 
 	if ($request_member_no > 0) {
 				// 当該月の当該user_idのデータをtbl_eventから削除する
-		$request_year_str = (string).$request_year;
+		$request_year_str = (string)$request_year;
 
-		$request_month_str = (string).$request_month;
+		$request_month_str = (string)$request_month;
 
 		$request_member_no_str = (string)$request_member_no;
 				// adjusting member_no to 6 digits.
