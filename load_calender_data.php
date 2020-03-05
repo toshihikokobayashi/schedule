@@ -14,7 +14,6 @@ $request_month = str_replace('"',"",$request_month);
 
 require_once "./const/const.inc";
 require_once "./func.inc";
-require_once "./const.inc";
 require_once("./const/login_func.inc");
 require_once("./const/token.php");
 ini_set('include_path', CLIENT_LIBRALY_PATH);
