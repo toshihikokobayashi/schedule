@@ -104,7 +104,7 @@ $dbh->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 try{
 
 	$sql = "SELECT insert_timestamp FROM tbl_fixed WHERE year=? AND month=?";
-	$stmt = $dbh->prepare($sql);
+	$stmt = $db->prepare($sql);
 	$stmt->bindValue(1, $request_year, PDO::PARAM_INT);
 	$stmt->bindValue(2, $request_month, PDO::PARAM_INT);
 	$stmt->execute();
@@ -483,17 +483,17 @@ function get_lecture_vector(&$db,$lecture_id) {
 }
 
 // 作業名の一覧を取得
-function get_work_list(&$db) {
-        $sql = "SELECT * FROM tbl_work ";
-        $stmt = $db->prepare($sql);
-        $stmt->execute();
-        $work_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $work_list = array();
-        foreach ( $work_array as $row ) {
-                $work_list[$row["id"]] = $row;
-        }
-        return $work_list;
-}
+//function get_work_list(&$dbh) {
+//        $sql = "SELECT * FROM tbl_work ";
+//        $stmt = $dbh->prepare($sql);
+//        $stmt->execute();
+//        $work_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+//        $work_list = array();
+//        foreach ( $work_array as $row ) {
+//                $work_list[$row["id"]] = $row;
+//        }
+//        return $work_list;
+//}
 
 ?>
 
