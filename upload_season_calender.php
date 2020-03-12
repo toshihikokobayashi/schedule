@@ -503,7 +503,7 @@ try{
 		$dateObj = new DateTime($m2metime_str);
 		$m2metime_ts = $dateObj->getTimestamp();
 
-		if ($m2metime_ts === $endofday_ts) {
+		if ($m2metime_ts === $endofday_ts && $m2mstime_ts === $crnt_ts ) {
 				// 当日のスケジュールの終端に到達した。挿入するデータなし。
 			break;
 		} else if ($m2mstime_ts === $crnt_ts) {
