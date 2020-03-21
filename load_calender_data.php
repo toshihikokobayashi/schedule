@@ -531,6 +531,9 @@ if ($err_flag == true) {
                 }
         }
 } else {
+?>
+        <a href='menu.php'><h4>正常終了しました。メニュー画面に戻る</h4></a>
+<?php
 }
 ?>
 
