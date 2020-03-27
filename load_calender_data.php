@@ -99,7 +99,7 @@ $member_list = get_member_list($db);
 
 $now = date('Y-m-d H:i:s');
 //$dbh=new PDO('mysql:host=mysql720.db.sakura.ne.jp;dbname=hachiojisakura_calendar;charset=utf8',DB_USER,DB_PASSWD2);
-$dbh->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+//$dbh->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
 try{
 
@@ -145,8 +145,33 @@ try{
 
 
 	$sql = "SELECT id, ".
-	"repetition_id, user_id,teacher_id,student_no,ymd,starttime,endtime,lecture_id,work_id,free,cancel,cancel_reason,alternate,altsched_id,trial_id, ".
-	"absent1_num,absent2_num,trial_num,repeattimes,place_id,temporary,entrytime,updatetime,updateuser,comment,googlecal_id,googleevent_id,recurrence_id".
+	"repetition_id, ".
+	"user_id, ".
+	"teacher_id, ".
+	"student_no, ".
+	"ymd, ".
+	"starttime, ".
+	"endtime, ".
+	"lecture_id, ".
+	"work_id, ".
+	"free, ".
+	"cancel, ".
+	"cancel_reason, ".
+	"alternate, ".
+	"altsched_id, ".
+	"absent1_num,".
+	"absent2_num,".
+	"trial_num,".
+	"repeattimes,".
+	"place_id,".
+	"temporary,".
+	"entrytime,".
+	"updatetime,".
+	"updateuser,".
+	"comment,".
+	"googlecal_id,".
+	"googleevent_id".
+	"recurrence_id".
 	" FROM tbl_schedule_onetime WHERE delflag!=1 AND cancel!='c' AND ymd BETWEEN ? AND ? ";
 	if ($request_member_no > 0) {
 		$sql .= " AND where user_id= ?";
@@ -238,12 +263,15 @@ try{
 			$event_diff_hours = 0;
 		} else { $absent_flag = '0'; }
 							// 振替処理
-		if ($alternate !==' ' || $altsched_id !== 0 ) { 
+		if ($alternate ===' ' || $alternate ===NULL ){
+			$alternate = ''; 
+		}
+		if ($alternate !=='' || $altsched_id > 0 ) { 
 			$alternative_flag = '1' ;  
 			$event_diff_hours = 0;
 			$evt_summary = $evt_summary.CONST_ALTERNATE;
 		} else {
-			$alternative_flag = ' ';
+			$alternative_flag = '';
 		} 
 
 		if ($user_id > 200000 ) { // staff
@@ -302,7 +330,7 @@ try{
 
 		if ($course_id == 2 || $course_id == 3 ) {		// Group or Family
 							// 体験を文字列にする処理
-			if ($trial_id === '0' || $trial_id === ' ' ){
+			if ($trial_id === '0' || $trial_id === ' ' || $trial_id =='' || $trial_id == NULL ){
 				$trial_flag = '0'; 
 			} else {
 				$trial_flag = '1'; 
@@ -335,7 +363,7 @@ try{
 		}
 		if ($course_id !== 2 && $course_id !== 3 ) {		// Neither Group nor Family
 							// 体験を文字列にする処理
-			if ($trial_id === '0' || $trial_id === ' ' ){
+			if ($trial_id === '0' || $trial_id === ' ' || $trial_id ==='' || $trial_id===NULL){
 				$trial_flag = '0'; 
 			} else {
 				$trial_flag = '1'; 
@@ -520,7 +548,7 @@ function get_lecture_vector(&$db,$lecture_id) {
 if ($err_flag == true) {
 ?>
 
-        <h4><font color="red">カレンダーデータべースに取り込むことができませんでした。</font></h4>
+        <a href='menu.php'><h4><font color="red">カレンダーデータべースに取り込むことができませんでした。メニュー画面に戻る</font></h4></a>
 
 <?php
         if (count($errArray) > 0) {
