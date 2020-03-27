@@ -170,7 +170,7 @@ try{
 	"updateuser,".
 	"comment,".
 	"googlecal_id,".
-	"googleevent_id".
+	"googleevent_id,".
 	"recurrence_id".
 	" FROM tbl_schedule_onetime WHERE delflag!=1 AND cancel!='c' AND ymd BETWEEN ? AND ? ";
 	if ($request_member_no > 0) {
