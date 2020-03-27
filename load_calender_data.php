@@ -3,6 +3,7 @@
 
 ini_set( 'display_errors', 0 );
 $err_flag = false ;
+$errArray = array();
 
 $request_year = $_GET['year'];
 $request_year = str_replace("'","",$request_year);
@@ -19,7 +20,7 @@ require_once("./const/token.php");
 ini_set('include_path', CLIENT_LIBRALY_PATH);
 //require_once "Google/autoload.php";
 set_time_limit(60);
-define(API_TOKEN, '7511a32c7b6fd3d085f7c6cbe66049e7');
+//define(API_TOKEN, '7511a32c7b6fd3d085f7c6cbe66049e7');
 
 define('CONST_ALTERNATE','振替:');
 define('CONST_ABSENT','休み:');
@@ -42,6 +43,7 @@ define('CONST_CLOSING',')');
 define('CONST_TRYSTUDENT','体験生徒');
 define('CONST_SS','：演習');
 define('CONST_SEASONSS','：季節講習演習');
+define('CONST_NOTDEFINED','不定科目');
 
 
 // ****** メイン処理ここから ******
@@ -59,21 +61,29 @@ $subject_list = get_subject_list($db);
 
 if (!$request_year){
 	$err_flag = true;
+	$message = 'Syntax error: request_year is missing.';
+	array_push($errArray,$message);
 	goto exit_label;
 }
 
 if ($request_year < 2015 ){
 	$err_flag = true;
+	$message = 'Error: request_year is not correct.';
+	array_push($errArray,$message);
 	goto exit_label;
 }
 $request_year = (int)$request_year;
 
 if (!$request_month){
 	$err_flag = true;
+	$message = 'Syntax error: request_month is missing.';
+	array_push($errArray,$message);
 	goto exit_label;
 }
 if ($request_month < 1 || $request_month > 12){
 	$err_flag = true;
+	$message = 'Error: request_month is not correct.';
+	array_push($errArray,$message);
 	goto exit_label;
 }
 $request_month = (int)$request_month;
@@ -88,18 +98,12 @@ if (!$request_user_id){
 	$request_user_id = 0;
 }
 
-// 20160522 セッション管理を追加
-//$dbh->beginTransaction();
-//$result = set_current_session();
-
 mb_regex_encoding("UTF-8");
 $teacher_list = get_teacher_list($db);
 $member_list = get_member_list($db);
 			// レッスンリストの取得
 
 $now = date('Y-m-d H:i:s');
-//$dbh=new PDO('mysql:host=mysql720.db.sakura.ne.jp;dbname=hachiojisakura_calendar;charset=utf8',DB_USER,DB_PASSWD2);
-//$dbh->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
 try{
 
@@ -111,7 +115,9 @@ try{
 	$rslt = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 	if (!$rslt){ // not found
-		print_r('target data is not commited.');
+		$err_flag = true;
+		$message = 'Error: target data is not commited.';
+		array_push($errArray,$message);
 		goto exit_label;
 	}
 
@@ -231,8 +237,9 @@ try{
 
 		$event_diff_hours = ($event_end_timestamp - $event_start_timestamp) / (60*60);
 
-		$lecture_list = get_lecture_vector($db,$lecture_id);
 		$evt_summary = '';			// Initialization.
+
+		$lecture_list = get_lecture_vector($db,$lecture_id);
 		$row_cnt = count($lecture_list) ;
 		if ($row_cnt  > 0) {
 			$lesson_id = (int)$lecture_list[lesson_id];
@@ -392,10 +399,24 @@ try{
 
 		if ($user_id > 200000 ) {	// スタッフの場合
 			$staff_no = $user_id - 200000 ;
-                        $sql = "INSERT INTO tbl_event_staff ".
-                        "(event_id, staff_no, staff_cal_name, event_year, event_month, event_day, event_start_timestamp, ".
-                        " event_end_timestamp, event_diff_hours, absent_flag,".
-                        " cal_id, cal_summary, cal_evt_summary, cal_evt_location, cal_evt_description, update_datetime, place_floors".
+                        $sql = "INSERT INTO tbl_event_staff (".
+                        "event_id, ".
+                        "staff_no, ".
+                        "staff_cal_name, ".
+                        "event_year, ".
+                        "event_month, ".
+                        "event_day, ".
+                        "event_start_timestamp, ".
+                        "event_end_timestamp, ".
+                        "event_diff_hours, ".
+                        "absent_flag,".
+                        "cal_id, ".
+                        "cal_summary, ".
+                        "cal_evt_summary, ".
+                        "cal_evt_location, ".
+                        "cal_evt_description, ".
+                        "update_datetime, ".
+                        "place_floors".
                         " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			$stmt = $db->prepare($sql);
 			$stmt->bindValue(1, $schedule_id, PDO::PARAM_INT);
@@ -430,16 +451,46 @@ try{
 			$repeat_flag = $repeattimes;  
 
                 	$sql = "INSERT INTO tbl_event (".
-                        " event_id, member_no, ".
-                        " member_id, member_cal_name, member_kind, ".
-                        " event_year, event_month, event_day, ".
-                        " event_start_timestamp, event_start_hour, event_start_minute, ".
-                        " event_end_timestamp, event_end_hour, event_end_minute, ".
+                        " event_id, ".
+                        " member_no, ".
+                        " member_id, ".
+                        " member_cal_name, ".
+                        " member_kind, ".
+                        " event_year, ".
+                        " event_month, ".
+                        " event_day, ".
+                        " event_start_timestamp, ".
+                        " event_start_hour, ".
+                        " event_start_minute, ".
+                        " event_end_timestamp, ".
+                        " event_end_hour, ".
+                        " event_end_minute, ".
                         " event_diff_hours, ".
-                        " lesson_id, subject_id, course_id, teacher_id, place_floors, absent_flag, trial_flag, interview_flag, alternative_flag,".
-                        " absent1_num, absent2_num, trial_num, repeat_flag, ".
-                        " cal_id, cal_summary, cal_evt_summary, cal_attendance_data, cal_evt_location, cal_evt_description, update_datetime, seikyu_year, seikyu_month,".
-                        " recurringEvent, grade, monthly_fee_flag ".
+                        " lesson_id, ".
+                        " subject_id, ".
+                        " course_id, ".
+                        " teacher_id, ".
+                        " place_floors, ".
+                        " absent_flag, ".
+                        " trial_flag, ".
+                        " interview_flag, ".
+                        " alternative_flag,".
+                        " absent1_num, ".
+                        " absent2_num, ".
+                        " trial_num, ".
+                        " repeat_flag, ".
+                        " cal_id, ".
+                        " cal_summary, ".
+                        " cal_evt_summary, ".
+                        " cal_attendance_data, ".
+                        " cal_evt_location, ".
+                        " cal_evt_description, ".
+                        " update_datetime, ".
+                        " seikyu_year, ".
+                        " seikyu_month,".
+                        " recurringEvent, ".
+                        " grade, ".
+                        " monthly_fee_flag ".
                         " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         $stmt = $db->prepare($sql);
 			$stmt->bindValue(1, $schedule_id, PDO::PARAM_STR);
@@ -509,19 +560,6 @@ function get_lecture_vector(&$db,$lecture_id) {
         }
         return $lecture_list;
 }
-
-// 作業名の一覧を取得
-//function get_work_list(&$dbh) {
-//        $sql = "SELECT * FROM tbl_work ";
-//        $stmt = $dbh->prepare($sql);
-//        $stmt->execute();
-//        $work_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-//        $work_list = array();
-//        foreach ( $work_array as $row ) {
-//                $work_list[$row["id"]] = $row;
-//        }
-//        return $work_list;
-//}
 
 ?>
 
