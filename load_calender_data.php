@@ -26,7 +26,6 @@ define('CONST_ALTERNATE','振替:');
 define('CONST_ABSENT','休み:');
 define('CONST_ABSENT1','休み1:');
 define('CONST_ABSENT2','休み2:');
-define('CONST_ABSENT3','休み3:');
 define('CONST_ABSENTOFF','休講');
 define('CONST_ABSENTLATE','当日');
 define('CONST_COLON',':');
@@ -43,13 +42,9 @@ define('CONST_CLOSING',')');
 define('CONST_TRYSTUDENT','体験生徒');
 define('CONST_SS','：演習');
 define('CONST_SEASONSS','：季節講習演習');
+define('CONST_SEASON','：季節講習');
 define('CONST_NOTDEFINED','不定科目');
 
-
-// ****** メイン処理ここから ******
-
-//echo($request_year);
-//echo($request_month);
 
 $teacher_list = get_teacher_list($db);
 
@@ -261,9 +256,6 @@ try{
 		} else if ($cancel == 'a2') { 
 			$absent_flag = '2';
 			$evt_summary = $evt_summary.CONST_ABSENT2;
-		} else if ($cancel == 'a3') {
-			$absent_flag = '3'; 
-			$evt_summary = $evt_summary.CONST_ABSENT3;
 		} else if ($cancel == 'a') { 
 			$absent_flag = '1'; 
 			$evt_summary = $evt_summary.CONST_ABSENT;
@@ -292,6 +284,7 @@ try{
 			$staff_cal_name = $result['name'];
 			$evt_summary = $evt_summary.$staff_cal_name;
 			$event_summary = $event_summary.$CONST_SAN;
+
 		} else if ($user_id > 100000 ) { // teacher
 			$member_cal_name = ' ';
 			foreach ($teacher_list as $teacher) {
@@ -393,6 +386,9 @@ try{
 		if ($work_id==5) {			// 演習の文字列をセット 
 			$evt_summary = $evt_summary.CONST_SS ;
 		}
+		if ($work_id==10) {			// 季節講習の文字列をセット 
+			$evt_summary = $evt_summary.CONST_SEASON ;
+		}
 		if ($work_id==11) {			// 季節講習演習の文字列をセット 
 			$evt_summary = $evt_summary.CONST_SEASONSS ;
 		}
@@ -438,7 +434,6 @@ try{
 			$stmt->bindValue(17, $place_id, PDO::PARAM_INT);  // setting place_floors. 
 			$stmt->execute();
                
-		   // スタッフの場合の処理終了
 		 }  else {			// スタッフでない場合
 			if ($user_id > 100000){ // 先生の場合
 				$member_no = 0; // 生徒がいない先生のスケジュール
@@ -543,9 +538,6 @@ exit_label:
 	print_r('insert_calender_event:failed: ' . $e->getMessage());
 	return false;
 }
-
-// ****** メイン処理ここまで ******
-
 
 // レクチャIDからレッスンID,コースID、科目IDを取得する
 function get_lecture_vector(&$db,$lecture_id) {
