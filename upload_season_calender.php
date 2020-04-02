@@ -25,7 +25,7 @@ if (!$request_startmonth){
 }
 
 if (strlen($request_startmonth) === 1) {	// filling leading zero.
-	$request_startmonth_str = '0'.$request_month;
+	$request_startmonth_str = '0'.$request_startmonth;
 } else {
 	$request_startmonth_str = $request_startmonth;
 }
