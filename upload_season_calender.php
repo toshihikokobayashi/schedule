@@ -128,6 +128,7 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 	$stmt->bindValue(3, $startofmonth, PDO::PARAM_STR);
 	$stmt->bindValue(4, $endofmonth, PDO::PARAM_STR);
 	$stmt->execute();
+	$start_id = 0;
 	$schedule_onetime_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	foreach ( $schedule_onetime_array as $schedule_onetime_row ) {
 		$sql = "UPDATE tbl_schedule_onetime SET delflag=1,deletetime=?,updateuser=-1 ";
@@ -137,10 +138,24 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 		$id = $schedule_onetime_row['id'];
 		$stmt->bindValue(2, $id, PDO::PARAM_INT);
 		$stmt->execute();
-		$result = lms_delete_notify($id);
-		if (!$result){		// if null then error.
-			goto error_label;
+
+		if ($start_id === 0) { 		// initialization
+			$start_id = $id; 
+			$end_id = $id;
+		} else if ($end_id < $id - 1 ){ // not sequential.
+			$result = lms_delete_notify($start_id,$end_id);
+			if (!$result){		// if null then error.
+				goto error_label;
+			}
+			$start_id = $id; 
+			$end_id = $id;
+		} else { 			// sequential.
+			$end_id = $id;		// count up $end_id
 		}
+	}
+	$result = lms_delete_notify($start_id,$end_id);
+	if (!$result){		// if null then error.
+		goto error_label;
 	}
 
 } else if ($already_exist == 0) {		// load new data.
@@ -159,6 +174,11 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 			// tbl_season_scheduleからman2manデータの取得
 $startyearmonth_percent = $request_startyear.'/'.$request_startmonth_str.'%';
 $endyearmonth_percent = $request_endyear.'/'.$request_endmonth_str.'%';
+
+$sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
+$stmt = $dbh->prepare($sql);
+$stmt->execute();
+$start_id = $stmt->fetchColumn() + 1;
 
 			// retrieve tbl_season_class_entry_date ( this has no teacher data.)
 $sql = "SELECT date,stime,etime,member_id FROM tbl_season_class_entry_date ";
@@ -420,6 +440,16 @@ foreach ( $season_teacherattend_array as $season_teacherattend_date_row ) {
 	$status = insert_teacherattend_schedule($db,$dbh,$teacher_no,$attendstime_ts,$attendetime_ts);
 
 }
+
+$sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
+$stmt = $dbh->prepare($sql);
+$stmt->execute();
+$end_id = $stmt->fetchColumn();
+					// notify insert to lms.
+$status = lms_insert_notify($start_id,$end_id);
+
+
+
 }catch (PDOException $e){
         print_r('exception: ' . $e->getMessage());
         return false;
@@ -526,12 +556,6 @@ try{
 	$stmt->bindValue(26, $recurrence_id, PDO::PARAM_STR);
 	$stmt->execute();
 
-	$sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
-	$stmt = $dbh->prepare($sql);
-	$stmt->execute();
-	$maxid = $stmt->fetchColumn();
-					// notify insert to lms.
-	$status = lms_insert_notify($maxid);
 	return $status;
 exit_label:
 }catch (PDOException $e){
@@ -973,11 +997,12 @@ check_target_schedule_exit_label:
 }
 }
 
-function lms_insert_notify($id){
+function lms_insert_notify($start_id,$end_id){
                 // this function notify update of the schedule to lms.
         $result = NULL;         // initialization.
         $senddata = array(
-                'id' => $id
+                'start_id' => $start_id,
+                'end_id' => $end_id
         );
         $query = http_build_query($senddata);
         $platform = PLATFORM;
@@ -1012,12 +1037,13 @@ function lms_insert_notify($id){
         return($result);
 }
 
-function lms_delete_notify($id){
+function lms_delete_notify($start_id,$end_id){
                 // this function notify update of the schedule to lms.
         $result = NULL;         // initialization.
         $senddata = array(
                 'is_delete_data' => '1',
-                'id' => $id
+                'start_id' => $start_id,
+                'end_id' => $end_id
         );
         $query = http_build_query($senddata,"","&");
                                 // http-get:
