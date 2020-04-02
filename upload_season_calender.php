@@ -135,7 +135,8 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 		$sql .= " WHERE id=?";
 		$stmt = $dbh->prepare($sql);
 		$stmt->bindValue(1, $now, PDO::PARAM_STR);
-		$stmt->bindValue(2, $schedule_onetime_row['id'], PDO::PARAM_INT);
+		$id = $schedule_onetime_row['id'];
+		$stmt->bindValue(2, $id, PDO::PARAM_INT);
 		$stmt->execute();
 		$result = lms_delete_notify($id);
 		if (!$result){		// if null then error.
