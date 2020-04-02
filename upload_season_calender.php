@@ -123,11 +123,10 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 	$sql = "SELECT id FROM tbl_schedule_onetime ";
 	$sql .= " WHERE confirm!='f' AND ( work_id=?  OR work_id=? ) AND ymd BETWEEN ? AND ?";
 	$stmt = $dbh->prepare($sql);
-	$stmt->bindValue(1, $now, PDO::PARAM_STR);
-	$stmt->bindValue(2, $target_work_id, PDO::PARAM_INT);
-	$stmt->bindValue(3, $target_work_id2, PDO::PARAM_INT);
-	$stmt->bindValue(4, $startofmonth, PDO::PARAM_STR);
-	$stmt->bindValue(5, $endofmonth, PDO::PARAM_STR);
+	$stmt->bindValue(1, $target_work_id, PDO::PARAM_INT);
+	$stmt->bindValue(2, $target_work_id2, PDO::PARAM_INT);
+	$stmt->bindValue(3, $startofmonth, PDO::PARAM_STR);
+	$stmt->bindValue(4, $endofmonth, PDO::PARAM_STR);
 	$stmt->execute();
 	$schedule_onetime_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	foreach ( $schedule_onetime_array as $schedule_onetime_row ) {
