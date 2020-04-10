@@ -440,8 +440,7 @@ foreach ( $season_teacherattend_array as $season_teacherattend_date_row ) {
 	$attendetime_str = $row['date'].' '.$attendetime.':00';
 	$dateObj = new DateTime($attendetime_str);
 	$attendetime_ts = $dateObj->getTimestamp();
-	$attendetime_ts = strtotime('+30 minute',$worketime_ts); // 30分単位の開始時間のため終了時間は+30分
-
+	$attendetime_ts = strtotime('+30 minute',$attendetime_ts); // 30分単位の開始時間のため終了時間は+30分
 	
 															// 当該スケジュールが既に入力済かをチェックする
 	$start_timestamp = $attendstime_ts;
