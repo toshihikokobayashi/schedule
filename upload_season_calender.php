@@ -155,6 +155,9 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 	}
 	$result = lms_delete_notify($start_id,$end_id);
 	if (!$result){		// if null then error.
+		$err_flag = true;
+		$message = 'lms_delete_notify error.';
+		array_push($errArray,$message);
 		goto error_label;
 	}
 
@@ -405,6 +408,12 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
        	$lecture_id = $result['lecture_id'];
 					// 全体時間からm2mの時間を引いて生徒の演習時間を求める
 	$status = insert_selfstudy_schedule($db,$dbh,$student_id_complete,$startofday_ts,$endofday_ts,$lecture_id,$place_id,$subject_id,$attend_status);
+	if (!$status){		// if null then error.
+		$err_flag = true;
+		$message = 'insert_selfstudy_schedule error.';
+		array_push($errArray,$message);
+		goto error_label;
+	}
 
 } 	// end of for each tbl_season_classentry_data.
 
@@ -464,6 +473,12 @@ $stmt->execute();
 $end_id = $stmt->fetchColumn();
 					// notify insert to lms.
 $status = lms_insert_notify($start_id,$end_id);
+if (!$status){		// if null then error.
+	$err_flag = true;
+	$message = 'lms_insert_notify error.';
+	array_push($errArray,$message);
+	goto error_label;
+}
 
 
 
@@ -576,6 +591,7 @@ try{
 	return $status;
 exit_label:
 }catch (PDOException $e){
+	$err_flag = true;
 	print_r('insert_calender_event:failed: ' . $e->getMessage());
 	return false;
 }
@@ -953,7 +969,6 @@ foreach ( $teacherattend_schedule_array as $row ) {
 	}		// end of if
 
         return $result;
-//var_dump($sql);
 teacherattend_exit:
 }catch (PDOException $e){
 	print_r('insert_teacherattendy_schedule:failed: ' . $e->getMessage());
