@@ -1023,7 +1023,6 @@ function lms_insert_notify($start_id,$end_id){
         );
         $query = http_build_query($senddata);
         $platform = PLATFORM;
-
                                 // http-post:
         if ($platform === 'staging' ){
                 $url = 'https://staging.sakuraone.jp/import/schedules?'.$query;
@@ -1055,11 +1054,8 @@ function lms_delete_notify($start_id,$end_id){
                 'end_id' => $end_id
         );
         $query = http_build_query($senddata,"","&");
-
-
         $platform = PLATFORM;
-  
-                                // http-po=======st:
+                                // http-post:
         if ($platform == 'staging' ){
                 $url = 'https://staging.sakuraone.jp/import/schedules?'.$query;
         } else if ($platform == 'production' ){
