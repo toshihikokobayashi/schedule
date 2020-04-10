@@ -437,6 +437,7 @@ foreach ( $season_teacherattend_array as $season_teacherattend_date_row ) {
 															// 当該スケジュールが既に入力済かをチェックする
 	$start_timestamp = $attendstime_ts;
 	$end_timestamp = $attendetime_ts;
+	$user_id = $teacher_no + 100000 ;
 	$onetime_schedule_status = check_target_schedule($dbh,$datewithhyphen,$start_timestamp,$end_timestamp,$user_id);
 
 	if ($onetime_schedule_status == 'new'){
