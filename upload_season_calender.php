@@ -440,6 +440,7 @@ foreach ( $season_teacherattend_array as $season_teacherattend_date_row ) {
 															// 当該スケジュールが既に入力済かをチェックする
 	$start_timestamp = $attendstime_ts;
 	$end_timestamp = $attendetime_ts;
+	$user_id = $teacher_no + 100000 ;
 	$onetime_schedule_status = check_target_schedule($dbh,$datewithhyphen,$start_timestamp,$end_timestamp,$user_id);
 
 	if ($onetime_schedule_status == 'new'){
@@ -1022,7 +1023,6 @@ function lms_insert_notify($start_id,$end_id){
         );
         $query = http_build_query($senddata);
         $platform = PLATFORM;
-
                                 // http-post:
         if ($platform === 'staging' ){
                 $url = 'https://staging.sakuraone.jp/import/schedules?'.$query;
@@ -1054,11 +1054,8 @@ function lms_delete_notify($start_id,$end_id){
                 'end_id' => $end_id
         );
         $query = http_build_query($senddata,"","&");
-
-
         $platform = PLATFORM;
-  
-                                // http-po=======st:
+                                // http-post:
         if ($platform == 'staging' ){
                 $url = 'https://staging.sakuraone.jp/import/schedules?'.$query;
         } else if ($platform == 'production' ){
