@@ -145,6 +145,9 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 		} else if ($end_id < $id - 1 ){ // not sequential.
 			$result = lms_delete_notify($start_id,$end_id);
 			if (!$result){		// if null then error.
+				$err_flag = true;
+				$message = 'lms_delete_notify error.';
+				array_push($errArray,$message);
 				goto error_label;
 			}
 			$start_id = $id; 
@@ -408,12 +411,6 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
        	$lecture_id = $result['lecture_id'];
 					// 全体時間からm2mの時間を引いて生徒の演習時間を求める
 	$status = insert_selfstudy_schedule($db,$dbh,$student_id_complete,$startofday_ts,$endofday_ts,$lecture_id,$place_id,$subject_id,$attend_status);
-	if (!$status){		// if null then error.
-		$err_flag = true;
-		$message = 'insert_selfstudy_schedule error.';
-		array_push($errArray,$message);
-		goto error_label;
-	}
 
 } 	// end of for each tbl_season_classentry_data.
 
