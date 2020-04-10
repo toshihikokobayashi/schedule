@@ -25,7 +25,7 @@ if (!$request_startmonth){
 }
 
 if (strlen($request_startmonth) === 1) {	// filling leading zero.
-	$request_startmonth_str = '0'.$request_month;
+	$request_startmonth_str = '0'.$request_startmonth;
 } else {
 	$request_startmonth_str = $request_startmonth;
 }
@@ -62,7 +62,7 @@ require_once("./const/login_func.inc");
 require_once("./const/token.php");
 ini_set('include_path', CLIENT_LIBRALY_PATH);
 set_time_limit(60);
-define(API_TOKEN, '7511a32c7b6fd3d085f7c6cbe66049e7');
+//define(API_TOKEN, '7511a32c7b6fd3d085f7c6cbe66049e7');
 
 // ****** メイン処理ここから ******
 
@@ -73,8 +73,6 @@ $subject_list = get_subject_list($db);
 $course_list = get_course_list($db);
 
 $now = date('Y-m-d H:i:s');
-//$dbh=new PDO('mysql:host=mysql720.db.sakura.ne.jp;dbname=hachiojisakura_calendar;charset=utf8',DB_USER,DB_PASSWD2);
-//$dbh->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
 $work_list = get_work_list($dbh);  // making work list.
 
@@ -100,7 +98,7 @@ $target_work_id2 = SEASONSS;		// for season and weekend seminar selfstudy only. 
 			// check whether schedule for the month is set.
 $startofmonth = $request_startyear.'-'.$request_startmonth_str.'-01';
 $endofmonth = $request_endyear.'-'.$request_endmonth_str.'-31';
-
+try{
 $sql = "SELECT COUNT(*) AS COUNT FROM tbl_schedule_onetime WHERE ( work_id=?  OR work_id=? ) AND delflag=0 AND ymd BETWEEN ? AND ?";
 $stmt = $dbh->prepare($sql);
 $stmt->bindValue(1, $target_work_id, PDO::PARAM_INT);
@@ -120,15 +118,43 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 
 	// 1st cycle. Check season_class schedule on tbl_schedule_onetime that is not confired yet. 
 	// if there is, logical delete the data.
-	$sql = "UPDATE tbl_schedule_onetime SET delflag=1,deletetime=?,updateuser=-1 ";
-	$sql .= " WHERE confirm!='f' AND ( work_id=?  OR work_id=? ) AND ymd BETWEEN ? AND ?";
+	$sql = "SELECT id FROM tbl_schedule_onetime ";
+	$sql .= " WHERE delflag=0 AND confirm!='f' AND ( work_id=?  OR work_id=? ) AND ymd BETWEEN ? AND ? ORDER BY id";
 	$stmt = $dbh->prepare($sql);
-	$stmt->bindValue(1, $now, PDO::PARAM_STR);
-	$stmt->bindValue(2, $target_work_id, PDO::PARAM_INT);
-	$stmt->bindValue(3, $target_work_id2, PDO::PARAM_INT);
-	$stmt->bindValue(4, $startofmonth, PDO::PARAM_STR);
-	$stmt->bindValue(5, $endofmonth, PDO::PARAM_STR);
+	$stmt->bindValue(1, $target_work_id, PDO::PARAM_INT);
+	$stmt->bindValue(2, $target_work_id2, PDO::PARAM_INT);
+	$stmt->bindValue(3, $startofmonth, PDO::PARAM_STR);
+	$stmt->bindValue(4, $endofmonth, PDO::PARAM_STR);
 	$stmt->execute();
+	$start_id = 0;
+	$schedule_onetime_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	foreach ( $schedule_onetime_array as $schedule_onetime_row ) {
+		$sql = "UPDATE tbl_schedule_onetime SET delflag=1,deletetime=?,updateuser=-1 ";
+		$sql .= " WHERE id=?";
+		$stmt = $dbh->prepare($sql);
+		$stmt->bindValue(1, $now, PDO::PARAM_STR);
+		$id = $schedule_onetime_row['id'];
+		$stmt->bindValue(2, $id, PDO::PARAM_INT);
+		$stmt->execute();
+
+		if ($start_id === 0) { 		// initialization
+			$start_id = $id; 
+			$end_id = $id;
+		} else if ($end_id < $id - 1 ){ // not sequential.
+			$result = lms_delete_notify($start_id,$end_id);
+			if (!$result){		// if null then error.
+				goto error_label;
+			}
+			$start_id = $id; 
+			$end_id = $id;
+		} else { 			// sequential.
+			$end_id = $id;		// count up $end_id
+		}
+	}
+	$result = lms_delete_notify($start_id,$end_id);
+	if (!$result){		// if null then error.
+		goto error_label;
+	}
 
 } else if ($already_exist == 0) {		// load new data.
 	if ($request_mode == 'replace') {	// replace option is specified but no data exist..
@@ -146,6 +172,12 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 			// tbl_season_scheduleからman2manデータの取得
 $startyearmonth_percent = $request_startyear.'/'.$request_startmonth_str.'%';
 $endyearmonth_percent = $request_endyear.'/'.$request_endmonth_str.'%';
+
+$sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
+$stmt = $dbh->prepare($sql);
+$stmt->execute();
+$start_id = $stmt->fetchColumn() + 1;
+
 			// retrieve tbl_season_class_entry_date ( this has no teacher data.)
 $sql = "SELECT date,stime,etime,member_id FROM tbl_season_class_entry_date ";
 $sql .= " WHERE date LIKE ? OR date LIKE ? ORDER BY date,member_id";
@@ -224,7 +256,28 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
                 $student_id_complete = '0'.$student_id;
         }
 
-					// tbl_season_schedule has total schedule both m2m and selfstudy.
+	$sql = "SELECT place FROM tbl_season_class_entry_date ";
+	$sql .= " WHERE date = ? AND member_id = ?";
+	$stmt = $db->prepare($sql);
+	$stmt->bindValue(1, $datewithslash, PDO::PARAM_STR);
+	$stmt->bindValue(2, $student_id_complete, PDO::PARAM_STR);
+	$stmt->execute();
+	$season_class_entry_date_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	foreach ( $season_class_entry_date_array as $season_class_entry_date_row ) {
+       		$place_char = $season_class_entry_date_row['place'] ;
+		if (mb_strpos($place_char,'八王子北口校舎')!== FALSE) {
+                      $place_id = 4;
+		      break;
+               } else if (mb_strpos($place_char,'国立校舎')!== FALSE) {
+                      $place_id = 6;
+		      break;
+               } else if (mb_strpos($place_char,'豊田校舎')!== FALSE) {
+                      $place_id = 1;
+		      break;
+               } 
+	}
+
+				// tbl_season_schedule has total schedule both m2m and selfstudy.
 	$sql = "SELECT stime,etime,lnum,teacher_no,course_id,lesson_id,subject_id FROM tbl_season_schedule ";
 	$sql .= " WHERE date = ? AND member_no = ?";
 	$stmt = $db->prepare($sql);
@@ -248,13 +301,12 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
   		$trial_num = 0; 
   		$comment = ""; 
 
-        	$place_id = 3 ; // Hachioji north 3F.
   		$work = 'season';
         	$lesson_id = (int)$season_schedule_row['lesson_id'] ;
         	$course_id = (int)$season_schedule_row['course_id'] ;
         	$subject_id = (int)$season_schedule_row['subject_id'] ;
-        	$teacher_id = (int)$season_schedule_row['teacher_no'] ;
-        	$teacher_id = $teacher_id + 100000 ;
+        	$teacher_no = (int)$season_schedule_row['teacher_no'] ;
+        	$teacher_id = $teacher_no + 100000 ;
 
 		$starttime = $season_schedule_row['stime'];
 		$timestamp_str = $datewithslash.' '.$starttime.':00';
@@ -304,7 +356,9 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
 					$absent2_num,
 					$trial_num,
 					$subject_id);
-	} 	// m2m のデータ投入終了
+
+						// m2mのデータ投入終了
+	} 	
 			// Initialization.
  	$temporary = 0; 
   	$trial_id = ""; 
@@ -347,10 +401,72 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
 	$stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
        	$lecture_id = $result['lecture_id'];
-					// 全体時間からm2mの時間を引いて演習時間を求める
+					// 全体時間からm2mの時間を引いて生徒の演習時間を求める
 	$status = insert_selfstudy_schedule($db,$dbh,$student_id_complete,$startofday_ts,$endofday_ts,$lecture_id,$place_id,$subject_id,$attend_status);
-					// Search for m2m schedule.
+
 } 	// end of for each tbl_season_classentry_data.
+
+			// 先生の演習時間入力
+			// retrieve tbl_season_class_entry_date ( this has no teacher data.)
+$sql = "SELECT no,date,times FROM tbl_season_class_teacher_entry1 ";
+$sql .= " WHERE date LIKE ? OR date LIKE ? ORDER BY date,no";
+$stmt = $db->prepare($sql);
+$stmt->bindValue(1, $startyearmonth_percent, PDO::PARAM_STR);
+$stmt->bindValue(2, $endyearmonth_percent, PDO::PARAM_STR);
+$stmt->execute();
+$season_teacherattend_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ( $season_teacherattend_array as $season_teacherattend_date_row ) {
+        $datewithslash = $season_teacherattend_row['date'];
+        $datewithhyphen = mb_ereg_replace('/','-',$datewithslash);
+			// replace '/' with '-'
+	$teacher_no = $row['no'];
+	$attendstime = substr($row['times'],0,5);			// format hh:mm
+	$lastoffset = strlen($row['times']) - 5;
+	$attendetime = substr($row['times'],$lastoffset,5);	// format hh:mm
+
+	$attendstime_str = $row['date'].' '.$attendstime.':00';
+	$dateObj = new DateTime($attendstime_str);
+	$attendstime_ts = $dateObj->getTimestamp();
+
+	$attendetime_str = $row['date'].' '.$attendetime.':00';
+	$dateObj = new DateTime($attendetime_str);
+	$attendetime_ts = $dateObj->getTimestamp();
+	$attendetime_ts = strtotime('+30 minute',$worketime_ts); // 30分単位の開始時間のため終了時間は+30分
+	
+															// 当該スケジュールが既に入力済かをチェックする
+	$start_timestamp = $attendstime_ts;
+	$end_timestamp = $attendetime_ts;
+	$onetime_schedule_status = check_target_schedule($dbh,$datewithhyphen,$start_timestamp,$end_timestamp,$user_id);
+
+	if ($onetime_schedule_status == 'new'){
+		// insert.
+	} else if ($onetime_schedule_status == 'confirmed'){
+		$message = "Error:already confirmed:user_id=$user_id,date=$datewithhyphen";
+		array_push($errArray,$message);
+		// skip insert process.
+		continue;
+	}
+
+						// 先生の演習時間を求める
+	$status = insert_teacherattend_schedule($db,$dbh,$teacher_no,$attendstime_ts,$attendetime_ts);
+
+}
+
+$sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
+$stmt = $dbh->prepare($sql);
+$stmt->execute();
+$end_id = $stmt->fetchColumn();
+					// notify insert to lms.
+$status = lms_insert_notify($start_id,$end_id);
+
+
+
+}catch (PDOException $e){
+        print_r('exception: ' . $e->getMessage());
+        return false;
+}
+
 
 error_label:
 	if ($err_flag === true){
@@ -396,9 +512,32 @@ global $now;
 try{
 						// not Repeting
 	$sql = "INSERT INTO tbl_schedule_onetime (".
-	" repetition_id, user_id,teacher_id,student_no,ymd,starttime,endtime,lecture_id,subject_expr,work_id,free,cancel,cancel_reason, ".
-	" alternate,altsched_id,trial_id, absent1_num,absent2_num,trial_num,repeattimes,place_id,temporary,entrytime,updateuser, ".
-	" comment,recurrence_id ".
+	" repetition_id,".
+	" user_id,".
+	" teacher_id,".
+	" student_no,".
+	" ymd,".
+	" starttime,".
+	" endtime,".
+	" lecture_id,".
+	" subject_expr,".
+	" work_id,".
+	" free,".
+	" cancel,".
+	" cancel_reason, ".
+	" alternate,".
+	" altsched_id,".
+	" trial_id,".
+	" absent1_num,".
+	" absent2_num,".
+	" trial_num,".
+	" repeattimes,".
+	" place_id,".
+	" temporary,".
+	" entrytime,".
+	" updateuser, ".
+	" comment,".
+	" recurrence_id ".
 	" ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	$stmt = $dbh->prepare($sql);
 	$stmt->bindValue(1, $repetition_id, PDO::PARAM_INT);
@@ -427,9 +566,9 @@ try{
 	$stmt->bindValue(24, $updateuser, PDO::PARAM_INT);
 	$stmt->bindValue(25, $comment, PDO::PARAM_STR);
 	$stmt->bindValue(26, $recurrence_id, PDO::PARAM_STR);
-//var_dump($sql);
 	$stmt->execute();
-	return true;
+
+	return $status;
 exit_label:
 }catch (PDOException $e){
 	print_r('insert_calender_event:failed: ' . $e->getMessage());
@@ -451,7 +590,7 @@ function get_work_list(&$dbh) {
         return $work_list;
 }
 
-/************* Selfstudy schedule Insert ****************/
+/************* Selfstudy schedule for student Insert ****************/
 
 function insert_selfstudy_schedule(&$db,&$dbh,$student_id_complete,$startofday_ts,$endofday_ts,$lecture_id,$place_id,$subject_id,$attend_status ) {
 				// for a given season schedule(member_id,startofdayts,endofdayts), make up selfstudy schedule. 
@@ -480,7 +619,11 @@ if ($subject_id) {
 }
 
 try{
-	$sql = "SELECT date,stime,etime,member_no,lesson_id,subject_id,course_id FROM tbl_season_schedule WHERE member_no=? AND date=? ORDER BY stime";
+					// 生徒のスケジュール作成
+	$sql = "SELECT date,stime,etime,member_no,teacher_no,lesson_id,subject_id,course_id ";
+	$sql.= " FROM tbl_season_schedule ";
+	$sql.= " WHERE member_no=? AND date=? ";
+	$sql.= " ORDER BY stime";
 	$stmt = $db->prepare($sql);
 	$stmt->bindValue(1, $student_id_complete, PDO::PARAM_STR);	// 6桁の数値を表す文字列。先頭０．
 	$stmt->bindValue(2, $startymd, PDO::PARAM_STR);
@@ -653,6 +796,166 @@ exit_label:
 }
 } // End:event_insert
 
+
+function insert_teacherattend_schedule(&$db,&$dbh,$teacher_no,$attendstime_ts,$attendetime_ts ) {
+				// for a given season schedule(teacher_no,date), make up teacherattend schedule. 
+global $work_list;
+global $subject_list;
+global $now;
+
+$result = true;
+$teacher_id = 100000 + $teacher_no;
+$startymd = date('Y/m/d',$workstime_ts);
+			// converting work shortname into work_id
+$work = "ss" ; 		// 自習
+foreach ($work_list as $workitem) {
+	if (mb_strpos($workitem["shortname"], $work)!==false) {
+                $work_id = $workitem["id"];
+                break;  // for each
+        }
+}  // end of for each.
+
+try{
+							// 先生の立ち合いスケジュール作成
+$sql = "SELECT * FROM tbl_schedule_onetime WHERE teacher_id=? AND ymd=? ";
+$stmt = $dbh->prepare($sql);
+$stmt->bindValue(1, $teacher_id, PDO::PARAM_INT);	 
+$stmt->bindValue(2, $startymd, PDO::PARAM_STR);
+$stmt->execute();
+$teacherattend_schedule_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+if (!$teacherattend_schedule_array){ 	// not found.
+		// no need to insert attend schedule.
+		return true;
+}
+							// 当該先生のattend時間が既に作成済かどうかを調べる
+$crnt_ts = $attendstime_ts;				// setting start point.
+
+foreach ( $teacherattend_schedule_array as $row ) {
+
+	$workstime = $row['starttime'];
+	$worketime = $row['endtime'];
+
+	$workstime_str = $row['ymd'].' '.$workstime.':00';
+	$dateObj = new DateTime($workstime_str);
+	$workstime_ts = $dateObj->getTimestamp();
+
+	$worketime_str = $row['ymd'].' '.$worketime.':00';
+	$dateObj = new DateTime($worketime_str);
+	$worketime_ts = $dateObj->getTimestamp();
+
+	if ($worketime_ts === $attendetime_ts && $workstime_ts === $crnt_ts ) {
+				// 当日のスケジュールの終端に到達した。挿入するデータなし。
+			break;
+	} else if ($workstime_ts === $crnt_ts) {
+				// m2mから始まる。演習は後。
+			$crnt_ts = $worketime_ts;
+			continue;
+	} else  if ($workstime_ts > $crnt_ts) { 		//次のman2manが始まるまでに自習時間がある
+		$start_timestamp = $crnt_ts ;
+		$end_timestamp = $workstime_ts ;
+		$crnt_ts = $worketime_ts;
+
+	  			 // Initialization.
+	 	$temporary = 0; 
+  		$trial_id = ""; 
+ 	 	$alternate = ""; 
+  		$altsched_id = 0; 
+  		$student_no = 0; 
+  		$user_id = (int)$teacher_id; 
+  		$cancel = ""; 
+  		$cancel_reason = ""; 
+  		$repetition_id = "" ; 
+  		$absent1_num = 0; 
+  		$absent2_num = 0; 
+  		$trial_num = 0; 
+  		$comment = ""; 
+  		$confirm = ""; 
+  		$cancel = ""; 
+  		$cancel_reason = ""; 
+
+		$result = insert_calender_event($dbh,
+				$start_timestamp,
+				$end_timestamp,
+				$repetition_id,
+				$user_id,
+				$teacher_id,
+				$student_no,
+				$lecture_id,
+				$work,
+				$free,
+				$cancel,
+				$cancel_reason,
+				$alternate,
+				$altsched_id,
+				$trial_id,
+				$repeattimes,
+				$place_id,
+				$temporary,
+				$comment,
+				$recurrence_id,
+				$absent1_num,
+				$absent2_num,
+				$trial_num,
+				$subject_id);
+		}		// end of if
+	}		// end of foreach.
+			// no more man2man recod but not reach the end of day. Then insert selfstudy record.
+
+	if ($worketime_ts < $attendetime_ts) { 		//その日の終了時間まで授業がある
+		$start_timestamp = $crnt_ts ;
+		$end_timestamp = $attendetime_ts ;
+
+	  			 // Initialization.
+	 	$temporary = 0; 
+  		$trial_id = ""; 
+ 	 	$alternate = ""; 
+  		$altsched_id = 0; 
+  		$student_no = 0; 
+  		$user_id = $teacher_id; 
+  		$cancel = ""; 
+  		$cancel_reason = ""; 
+  		$repetition_id = "" ; 
+  		$absent1_num = 0; 
+  		$absent2_num = 0; 
+  		$trial_num = 0; 
+  		$comment = ""; 
+
+		$result = insert_calender_event($dbh,
+				$start_timestamp,
+				$end_timestamp,
+				$repetition_id,
+				$user_id,
+				$teacher_id,
+				$student_no,
+				$lecture_id,
+				$work,
+				$free,
+				$cancel,
+				$cancel_reason,
+				$alternate,
+				$altsched_id,
+				$trial_id,
+				$repeattimes,
+				$place_id,
+				$temporary,
+				$comment,
+				$recurrence_id,
+				$absent1_num,
+				$absent2_num,
+				$trial_num,
+				$subject_id);
+	}		// end of if
+
+        return $result;
+//var_dump($sql);
+teacherattend_exit:
+}catch (PDOException $e){
+	print_r('insert_teacherattendy_schedule:failed: ' . $e->getMessage());
+	return false;
+}
+} // End:event_insert
+
 function check_target_schedule(&$dbh,$datewithhyphen,$start_timestamp,$end_timestamp,$user_id){
 			// This function check every season record on tbl_season_schedule.
 			// If the schedule is already confirmed then skip the insert.
@@ -706,6 +1009,70 @@ check_target_schedule_exit_label:
 }
 }
 
+function lms_insert_notify($start_id,$end_id){
+                // this function notify update of the schedule to lms.
+        $result = NULL;         // initialization.
+        $senddata = array(
+                'start_id' => $start_id,
+                'end_id' => $end_id
+        );
+        $query = http_build_query($senddata);
+        $platform = PLATFORM;
+                                // http-post:
+        if ($platform === 'staging' ){
+                $url = 'https://staging.sakuraone.jp/import/schedules?'.$query;
+        } else if ($platform === 'production' ){
+                $url = 'https://sakuraone.jp/import/schedules?'.$query;
+        }
+        $header = array(
+                'Content-Type: application/x-www-form-urlencoded',
+                'Content-Length: '.strlen($url),
+                'Api-Token: 7511a32c7b6fd3d085f7c6cbe66049e7'
+        );
+        $options = array('http' => array(
+                'method' => 'POST',
+                'header' => implode("\r\n",$header)
+                )
+        );
+        $ctx = stream_context_create($options);
+        $result = file_get_contents($url,false,$ctx);
+        if(!empty($result)) $result = json_decode($result);
+        return($result);
+}
+
+function lms_delete_notify($start_id,$end_id){
+                // this function notify update of the schedule to lms.
+        $result = NULL;         // initialization.
+        $senddata = array(
+                'is_delete_data' => '1',
+                'start_id' => $start_id,
+                'end_id' => $end_id
+        );
+        $query = http_build_query($senddata,"","&");
+        $platform = PLATFORM;
+                                // http-post:
+        if ($platform == 'staging' ){
+                $url = 'https://staging.sakuraone.jp/import/schedules?'.$query;
+        } else if ($platform == 'production' ){
+                $url = 'https://sakuraone.jp/import/schedules?'.$query;
+        }
+        $header = array(
+                'Content-Type:application/x-www-form-urlencoded',
+                'Content-Length: '.strlen($url),
+                'Api-Token: 7511a32c7b6fd3d085f7c6cbe66049e7'
+        );
+
+        $options = array('http' => array(
+                                 'method' => 'POST',
+                                 'header' => implode("\r\n",$header)
+                                )
+                        );
+        $ctx = stream_context_create($options);
+        $result = file_get_contents($url,false,$ctx);
+        if(!empty($result)) $result = json_decode($result);
+        return($result);
+
+}
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
