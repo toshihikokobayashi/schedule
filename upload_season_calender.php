@@ -62,7 +62,7 @@ require_once("./const/login_func.inc");
 require_once("./const/token.php");
 ini_set('include_path', CLIENT_LIBRALY_PATH);
 set_time_limit(60);
-define(API_TOKEN, '7511a32c7b6fd3d085f7c6cbe66049e7');
+//define(API_TOKEN, '7511a32c7b6fd3d085f7c6cbe66049e7');
 
 // ****** メイン処理ここから ******
 
@@ -73,8 +73,6 @@ $subject_list = get_subject_list($db);
 $course_list = get_course_list($db);
 
 $now = date('Y-m-d H:i:s');
-//$dbh=new PDO('mysql:host=mysql720.db.sakura.ne.jp;dbname=hachiojisakura_calendar;charset=utf8',DB_USER,DB_PASSWD2);
-//$dbh->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
 $work_list = get_work_list($dbh);  // making work list.
 
@@ -121,7 +119,9 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 	// 1st cycle. Check season_class schedule on tbl_schedule_onetime that is not confired yet. 
 	// if there is, logical delete the data.
 	$sql = "SELECT id FROM tbl_schedule_onetime ";
-	$sql .= " WHERE confirm!='f' AND ( work_id=?  OR work_id=? ) AND ymd BETWEEN ? AND ?";
+
+	$sql .= " WHERE delflag=0 AND confirm!='f' AND ( work_id=?  OR work_id=? ) AND ymd BETWEEN ? AND ? ORDER BY id";
+
 	$stmt = $dbh->prepare($sql);
 	$stmt->bindValue(1, $target_work_id, PDO::PARAM_INT);
 	$stmt->bindValue(2, $target_work_id2, PDO::PARAM_INT);
@@ -435,6 +435,22 @@ foreach ( $season_teacherattend_array as $season_teacherattend_date_row ) {
 	$dateObj = new DateTime($attendetime_str);
 	$attendetime_ts = $dateObj->getTimestamp();
 	$attendetime_ts = strtotime('+30 minute',$worketime_ts); // 30分単位の開始時間のため終了時間は+30分
+
+	
+															// 当該スケジュールが既に入力済かをチェックする
+	$start_timestamp = $attendstime_ts;
+	$end_timestamp = $attendetime_ts;
+	$onetime_schedule_status = check_target_schedule($dbh,$datewithhyphen,$start_timestamp,$end_timestamp,$user_id);
+
+	if ($onetime_schedule_status == 'new'){
+		// insert.
+	} else if ($onetime_schedule_status == 'confirmed'){
+		$message = "Error:already confirmed:user_id=$user_id,date=$datewithhyphen";
+		array_push($errArray,$message);
+		// skip insert process.
+		continue;
+	}
+
 
 						// 先生の演習時間を求める
 	$status = insert_teacherattend_schedule($db,$dbh,$teacher_no,$attendstime_ts,$attendetime_ts);
@@ -1006,14 +1022,6 @@ function lms_insert_notify($start_id,$end_id){
         );
         $query = http_build_query($senddata);
         $platform = PLATFORM;
-        if ($platform === 'staging' ){
-                $result = file_get_contents('https://staging.sakuraone.jp/import/schedules?'.$query);
-        } else if ($platform === 'production' ){
-                $result = file_get_contents('https://sakuraone.jp/import/schedules?'.$query);
-        }
-        if ($result === FALSE ){
-                return($result);
-        }
 
                                 // http-post:
         if ($platform === 'staging' ){
@@ -1046,18 +1054,11 @@ function lms_delete_notify($start_id,$end_id){
                 'end_id' => $end_id
         );
         $query = http_build_query($senddata,"","&");
-                                // http-get:
-        $platform = PLATFORM;
-        if ($platform == 'staging' ){
-                $result = file_get_contents('https://staging.sakuraone.jp/import/schedules?'.$query);
-        } else if ($platform == 'production' ){
-                $result = file_get_contents('https://sakuraone.jp/import/schedules?'.$query);
-        }
-        if ($result === FALSE ){                // not normal termination.
-                return($result);
-        }
 
-                                // http-post:
+
+        $platform = PLATFORM;
+  
+                                // http-po=======st:
         if ($platform == 'staging' ){
                 $url = 'https://staging.sakuraone.jp/import/schedules?'.$query;
         } else if ($platform == 'production' ){

@@ -398,8 +398,8 @@ function blankCheck() {
         開始年：<input type="text" name="startyear" value="" size="4">年&nbsp;
         開始月：<input type="text" name="startmonth" value="" size="4">月&nbsp;
         終了月（開始月の翌月）：<input type="text" name="endmonth" value="" size="4">月&nbsp;
-        replaceモード：<input type="text" name="mode" value="" size="4">モード&nbsp;
-        <input type="submit" value="表示">
+        更新の場合（replace)：<input type="text" name="mode" value="" size="4">モード&nbsp;
+        <input type="submit" value="実行">
         </form>
         <br>	<br>
 	<br>

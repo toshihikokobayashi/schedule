@@ -293,7 +293,7 @@ try{
 					$evt_summary = $evt_summary.CONST_SENSEI;
 				}
 			}
-		} else if ($user_id > 0 ) { // student
+		} else if ($user_id > 1 ) { // student
 			$member_cal_name = ' ';
 			foreach ($member_list as $member) {
 				if ($member['no'] == $user_id ){
@@ -303,6 +303,9 @@ try{
 					$evt_summary = $evt_summary.CONST_SAMA;
 				}
 			}
+		} else if ($user_id == 1 ) { // try student
+			$member_cal_name = CONST_TRYSTUDENT;
+			$evt_summary = $evt_summary.CONST_SAMA;
 		} else if ($user_id < 0 ) { // student not defined.
 			if ($comment !== ' '){
 				$member_cal_name = $comment;
@@ -352,7 +355,7 @@ try{
 			$evt_summary = $evt_summary.$subject_list[$subject_id];
 		}
 
-		if ($teacher_id) {			// setting teacher name 
+		if ($teacher_id && $teacher_id !== $user_id ) {			// setting teacher name 
 			$evt_summary = $evt_summary.CONST_COLON ;
 			foreach ($teacher_list as $teacher) {
 				if ($teacher['no'] == $teacher_id - 100000){
@@ -598,4 +601,3 @@ if ($err_flag == true) {
 </div>
 </body>
 </html>
-
