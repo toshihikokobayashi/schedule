@@ -119,7 +119,9 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 	// 1st cycle. Check season_class schedule on tbl_schedule_onetime that is not confired yet. 
 	// if there is, logical delete the data.
 	$sql = "SELECT id FROM tbl_schedule_onetime ";
+
 	$sql .= " WHERE delflag=0 AND confirm!='f' AND ( work_id=?  OR work_id=? ) AND ymd BETWEEN ? AND ? ORDER BY id";
+
 	$stmt = $dbh->prepare($sql);
 	$stmt->bindValue(1, $target_work_id, PDO::PARAM_INT);
 	$stmt->bindValue(2, $target_work_id2, PDO::PARAM_INT);
@@ -433,6 +435,7 @@ foreach ( $season_teacherattend_array as $season_teacherattend_date_row ) {
 	$dateObj = new DateTime($attendetime_str);
 	$attendetime_ts = $dateObj->getTimestamp();
 	$attendetime_ts = strtotime('+30 minute',$worketime_ts); // 30分単位の開始時間のため終了時間は+30分
+
 	
 															// 当該スケジュールが既に入力済かをチェックする
 	$start_timestamp = $attendstime_ts;
@@ -448,6 +451,7 @@ foreach ( $season_teacherattend_array as $season_teacherattend_date_row ) {
 		// skip insert process.
 		continue;
 	}
+
 
 						// 先生の演習時間を求める
 	$status = insert_teacherattend_schedule($db,$dbh,$teacher_no,$attendstime_ts,$attendetime_ts);
@@ -1019,6 +1023,7 @@ function lms_insert_notify($start_id,$end_id){
         );
         $query = http_build_query($senddata);
         $platform = PLATFORM;
+
                                 // http-post:
         if ($platform === 'staging' ){
                 $url = 'https://staging.sakuraone.jp/import/schedules?'.$query;
@@ -1050,8 +1055,11 @@ function lms_delete_notify($start_id,$end_id){
                 'end_id' => $end_id
         );
         $query = http_build_query($senddata,"","&");
+
+
         $platform = PLATFORM;
-                                // http-post:
+  
+                                // http-po=======st:
         if ($platform == 'staging' ){
                 $url = 'https://staging.sakuraone.jp/import/schedules?'.$query;
         } else if ($platform == 'production' ){
