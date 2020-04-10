@@ -424,8 +424,8 @@ $stmt->bindValue(2, $endyearmonth_percent, PDO::PARAM_STR);
 $stmt->execute();
 $season_teacherattend_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ( $season_teacherattend_array as $season_teacherattend_date_row ) {
-        $datewithslash = $season_teacherattend_row['date'];
+foreach ( $season_teacherattend_array as $row ) {
+        $datewithslash = $row['date'];
         $datewithhyphen = mb_ereg_replace('/','-',$datewithslash);
 			// replace '/' with '-'
 	$teacher_no = $row['no'];
