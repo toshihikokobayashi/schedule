@@ -221,23 +221,23 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
 	$end_timestamp = null;
   	$comment = ""; 
 
-        $datewithslash = $season_entry_date_row['date'];
-        $datewithhyphen = mb_ereg_replace('/','-',$datewithslash);
-			// replace '/' with '-'
+    $datewithslash = $season_entry_date_row['date'];
+    $datewithhyphen = mb_ereg_replace('/','-',$datewithslash);
+								// replace '/' with '-'
 
-        $starttime = $season_entry_date_row['stime'];
+    $starttime = $season_entry_date_row['stime'];
 	$timestamp_str = $datewithhyphen.' '.$starttime.':00';
 	$dateObj = new DateTime($timestamp_str);
 	$start_timestamp = $dateObj->getTimestamp();
 
-        $endtime = $season_entry_date_row['etime'];
+    $endtime = $season_entry_date_row['etime'];
 	$timestamp_str = $datewithhyphen.' '.$endtime.':00';
 	$dateObj = new DateTime($timestamp_str);
 	$end_timestamp = $dateObj->getTimestamp();
 
-        $user_id = (int)$season_entry_date_row['member_id'] ;
+    $user_id = (int)$season_entry_date_row['member_id'] ;
 
-			// check the target schedule is registered on the tbl_schedule_onetime.
+						// check the target schedule is registered on the tbl_schedule_onetime.
 	$onetime_schedule_status = check_target_schedule($dbh,$datewithhyphen,$start_timestamp,$end_timestamp,$user_id);
 
 	if ($onetime_schedule_status == 'new'){
@@ -245,12 +245,12 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
 	} else if ($onetime_schedule_status == 'confirmed'){
 		$message = "Error:already confirmed:user_id=$user_id,date=$datewithhyphen";
 		array_push($errArray,$message);
-		// skip insert process.
+							// skip insert process.
 		continue;
 	}
 
-        $student_no = $user_id ;
-        $student_id = (string)$student_no ;
+    $student_no = $user_id ;
+    $student_id = (string)$student_no ;
 	$student_id_len = strlen($student_id);
 	if ($student_id_len == 1) {
                 $student_id_complete = '00000'.$student_id;
@@ -310,11 +310,11 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
   		$comment = ""; 
 
   		$work = 'season';
-        	$lesson_id = (int)$season_schedule_row['lesson_id'] ;
-        	$course_id = (int)$season_schedule_row['course_id'] ;
-        	$subject_id = (int)$season_schedule_row['subject_id'] ;
-        	$teacher_no = (int)$season_schedule_row['teacher_no'] ;
-        	$teacher_id = $teacher_no + 100000 ;
+        $lesson_id = (int)$season_schedule_row['lesson_id'] ;
+        $course_id = (int)$season_schedule_row['course_id'] ;
+        $subject_id = (int)$season_schedule_row['subject_id'] ;
+        $teacher_no = (int)$season_schedule_row['teacher_no'] ;
+        $teacher_id = $teacher_no + 100000 ;
 
 		$starttime = $season_schedule_row['stime'];
 		$timestamp_str = $datewithslash.' '.$starttime.':00';
@@ -332,8 +332,8 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
 		$stmt->bindValue(2, $course_id, PDO::PARAM_INT);
 		$stmt->bindValue(3, $subject_id, PDO::PARAM_INT);
 		$stmt->execute();
-       		$result = $stmt->fetch(PDO::FETCH_ASSOC);
-        	$lecture_id = $result['lecture_id'];
+       	$result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $lecture_id = $result['lecture_id'];
 
 		if ( is_null($lecture_id)){
 			$lecture_id = 88;	// setting default value.
@@ -451,7 +451,7 @@ foreach ( $season_teacherattend_array as $row ) {
 	if ($onetime_schedule_status == 'new'){
 		// insert.
 	} else if ($onetime_schedule_status == 'confirmed'){
-		$message = "Error:already confirmed:user_id=$user_id,date=$datewithhyphen";
+		$message = "Error: confirmed:user_id=$user_id,date=$datewithhyphen";
 		array_push($errArray,$message);
 		// skip insert process.
 		continue;
@@ -822,7 +822,7 @@ global $now;
 
 $result = true;
 $teacher_id = 100000 + $teacher_no;
-$startymd = date('Y/m/d',$workstime_ts);
+
 			// converting work shortname into work_id
 $work = "ss" ; 		// 自習
 foreach ($work_list as $workitem) {
@@ -834,6 +834,7 @@ foreach ($work_list as $workitem) {
 
 try{
 							// 先生の立ち合いスケジュール作成
+$startymd = date('Y/m/d',$attendstime_ts);
 $sql = "SELECT * FROM tbl_schedule_onetime WHERE teacher_id=? AND ymd=? ";
 $stmt = $dbh->prepare($sql);
 $stmt->bindValue(1, $teacher_id, PDO::PARAM_INT);	 
