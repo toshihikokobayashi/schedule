@@ -1033,7 +1033,7 @@ function lms_insert_notify($start_id,$end_id){
                 'start_id' => $start_id,
                 'end_id' => $end_id
         );
-        $query = http_build_query($senddata);
+        $query = http_build_query($senddata,'',"&");
         $platform = PLATFORM;
                                 // http-post:
         if ($platform === 'staging' ){
@@ -1065,7 +1065,7 @@ function lms_delete_notify($start_id,$end_id){
                 'start_id' => $start_id,
                 'end_id' => $end_id
         );
-        $query = http_build_query($senddata,"","&");
+        $query = http_build_query($senddata,'',"&");
         $platform = PLATFORM;
                                 // http-post:
         if ($platform == 'staging' ){
