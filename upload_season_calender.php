@@ -62,7 +62,6 @@ require_once("./const/login_func.inc");
 require_once("./const/token.php");
 ini_set('include_path', CLIENT_LIBRALY_PATH);
 set_time_limit(60);
-//define(API_TOKEN, '7511a32c7b6fd3d085f7c6cbe66049e7');
 
 // ****** メイン処理ここから ******
 
