@@ -469,13 +469,25 @@ $sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
 $stmt = $dbh->prepare($sql);
 $stmt->execute();
 $end_id = (int)$stmt->fetchColumn();
+
+$tmp_start_id = $start_id;
+$tmp_end_id = $tmp_start_id;
+
 					// notify insert to lms.
-$status = lms_insert_notify($start_id,$end_id);
-if (!$status){		// if null then error.
-	$err_flag = true;
-	$message = 'lms_insert_notify error.';
-	array_push($errArray,$message);
-	goto error_label;
+while ($tmp_end_id < $end_id){
+	if ($end_id > $tmp_start_id + 100) {
+		$tmp_end_id = $tmp_start_id + 100 ;
+	} else {
+		$tmp_end_id = $end_id;
+	}
+	$status = lms_insert_notify($tmp_start_id,$tmp_end_id);
+	if (!$status){		// if null then error.
+		$err_flag = true;
+		$message = 'lms_insert_notify error.';
+		array_push($errArray,$message);
+		goto error_label;
+	}
+	$tmp_start_id = $tmp_end_id + 1;	// setting next start.
 }
 
 
@@ -1028,12 +1040,12 @@ check_target_schedule_exit_label:
 }
 }
 
-function lms_insert_notify($start_id,$end_id){
+function lms_insert_notify($tmp_start_id,$tmp_end_id){
                 // this function notify update of the schedule to lms.
         $result = NULL;         // initialization.
         $senddata = array(
-                'start_id' => $start_id,
-                'end_id' => $end_id
+                'start_id' => $tmp_start_id,
+                'end_id' => $tmp_end_id
         );
         $query = http_build_query($senddata,'',"&");
         $platform = PLATFORM;
@@ -1050,7 +1062,7 @@ function lms_insert_notify($start_id,$end_id){
         );
         $options = array('http' => array(
                 'method' => 'POST',
-                'timeout' => 1200 ,
+                'timeout' => 9600 ,
                 'header' => implode("\r\n",$header)
                 )
         );
@@ -1084,7 +1096,7 @@ function lms_delete_notify($start_id,$end_id){
 
         $options = array('http' => array(
                    'method' => 'POST',
-                   'timeout' => 1200 ,
+                   'timeout' => 9600 ,
                    'header' => implode("\r\n",$header)
                          )
                    );
