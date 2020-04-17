@@ -180,10 +180,7 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 $startyearmonth_percent = $request_startyear.'/'.$request_startmonth_str.'%';
 $endyearmonth_percent = $request_endyear.'/'.$request_endmonth_str.'%';
 
-$sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
-$stmt = $dbh->prepare($sql);
-$stmt->execute();
-$start_id = $stmt->fetchColumn() + 1;
+$start_id = 0;
 
 			// retrieve tbl_season_class_entry_date ( this has no teacher data.)
 $sql = "SELECT date,stime,etime,member_id FROM tbl_season_class_entry_date ";
@@ -364,6 +361,12 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
 					$trial_num,
 					$subject_id);
 
+		if ($start_id ===0){			// 挿入データの最初のid
+			$sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
+			$stmt = $dbh->prepare($sql);
+			$stmt->execute();
+			$start_id = (int)$stmt->fetchColumn() ;
+		}
 						// m2mのデータ投入終了
 	} 	
 			// Initialization.
@@ -465,7 +468,7 @@ foreach ( $season_teacherattend_array as $row ) {
 $sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
 $stmt = $dbh->prepare($sql);
 $stmt->execute();
-$end_id = $stmt->fetchColumn();
+$end_id = (int)$stmt->fetchColumn();
 					// notify insert to lms.
 $status = lms_insert_notify($start_id,$end_id);
 if (!$status){		// if null then error.
