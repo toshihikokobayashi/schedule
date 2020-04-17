@@ -1047,6 +1047,7 @@ function lms_insert_notify($start_id,$end_id){
         );
         $options = array('http' => array(
                 'method' => 'POST',
+                'timeout' => 1200 ,
                 'header' => implode("\r\n",$header)
                 )
         );
@@ -1079,10 +1080,11 @@ function lms_delete_notify($start_id,$end_id){
         );
 
         $options = array('http' => array(
-                                 'method' => 'POST',
-                                 'header' => implode("\r\n",$header)
-                                )
-                        );
+                   'method' => 'POST',
+                   'timeout' => 1200 ,
+                   'header' => implode("\r\n",$header)
+                         )
+                   );
         $ctx = stream_context_create($options);
         $result = file_get_contents($url,false,$ctx);
         if(!empty($result)) $result = json_decode($result);
