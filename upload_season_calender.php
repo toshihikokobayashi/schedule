@@ -853,11 +853,11 @@ foreach ( $teacherattend_schedule_array as $row ) {
 	$workstime = $row['starttime'];
 	$worketime = $row['endtime'];
 
-	$workstime_str = $row['ymd'].' '.$workstime.':00';
+	$workstime_str = $row['ymd'].' '.$workstime;
 	$dateObj = new DateTime($workstime_str);
 	$workstime_ts = $dateObj->getTimestamp();
 
-	$worketime_str = $row['ymd'].' '.$worketime.':00';
+	$worketime_str = $row['ymd'].' '.$worketime;
 	$dateObj = new DateTime($worketime_str);
 	$worketime_ts = $dateObj->getTimestamp();
 
