@@ -459,9 +459,23 @@ foreach ( $season_teacherattend_array as $row ) {
 		continue;
 	}
 
+	$starttime_str = date("H:i:s",$start_timestamp);
+	$endtime_str = date("H:i:s",$end_timestamp);
 
+	$sql = "SELECT place_id FROM tbl_schedule_onetime WHERE ymd=? AND teacher_id=? AND starttime >=?  AND endtime <=?"; 
+							// select from tbl_schedule_onetime.
+	$stmt = $dbh->prepare($sql);
+	$stmt->bindValue(1, $datewithhyphen, PDO::PARAM_STR);
+	$stmt->bindValue(2, $user_id, PDO::PARAM_INT);
+	$stmt->bindValue(3, $starttime_str, PDO::PARAM_STR);
+	$stmt->bindValue(4, $endtime_str, PDO::PARAM_STR);
+	$stmt->execute();
+        $place_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ( $place_array as $row ) {
+                $place_id = $row["place_id"];
+        }
 						// 先生の演習時間を求める
-	$status = insert_teacherattend_schedule($db,$dbh,$teacher_no,$attendstime_ts,$attendetime_ts);
+	$status = insert_teacherattend_schedule($db,$dbh,$teacher_no,$attendstime_ts,$attendetime_ts,$place_id);
 
 }
 
@@ -828,7 +842,7 @@ exit_label:
 } // End:event_insert
 
 
-function insert_teacherattend_schedule(&$db,&$dbh,$teacher_no,$attendstime_ts,$attendetime_ts ) {
+function insert_teacherattend_schedule(&$db,&$dbh,$teacher_no,$attendstime_ts,$attendetime_ts,$place_id ) {
 				// for a given season schedule(teacher_no,date), make up teacherattend schedule. 
 global $work_list;
 global $subject_list;
