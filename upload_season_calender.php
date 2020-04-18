@@ -863,7 +863,8 @@ foreach ($work_list as $workitem) {
 try{
 							// 先生の立ち合いスケジュール作成
 $startymd = date('Y/m/d',$attendstime_ts);
-$sql = "SELECT * FROM tbl_schedule_onetime WHERE teacher_id=? AND ymd=? ";
+							// 講習予定を検索する。なければ立ち合いなし
+$sql = "SELECT * FROM tbl_schedule_onetime WHERE teacher_id=? AND ymd=? AND delflag=0 AND work_id=10 ";
 $stmt = $dbh->prepare($sql);
 $stmt->bindValue(1, $teacher_id, PDO::PARAM_INT);	 
 $stmt->bindValue(2, $startymd, PDO::PARAM_STR);
