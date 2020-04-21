@@ -102,8 +102,6 @@ if (!$request_user_id){
 mb_regex_encoding("UTF-8");
 $teacher_list = get_teacher_list($db);
 $member_list = get_member_list($db);
-			// レッスンリストの取得
-
 $now = date('Y-m-d H:i:s');
 
 try{
