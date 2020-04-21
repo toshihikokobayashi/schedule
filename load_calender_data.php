@@ -91,6 +91,8 @@ $request_enddate = $request_year.'-'.$request_month.'-'.$enddate['mday'];
 
 if (!$request_user_id){
 	$request_user_id = 0;
+} else {
+	$request_user_id = (int) $request_user_id;
 }
 
 mb_regex_encoding("UTF-8");
