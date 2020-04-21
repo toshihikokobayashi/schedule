@@ -116,13 +116,13 @@ try{
 		goto exit_label;
 	}
 
-	if ($request_member_no > 0) {
+	if ($request_user_id > 0) {
 				// 当該月の当該user_idのデータをtbl_eventから削除する
 		$request_year_str = (string)$request_year;
 
 		$request_month_str = (string)$request_month;
 
-		$request_member_no_str = (string)$request_member_no;
+		$request_member_no_str = (string)$request_user_id;
 				// adjusting member_no to 6 digits.
 		if (strlen($request_member_no_str) === 1){
 			$request_member_no_str = '00000'.$request_member_no_str;
