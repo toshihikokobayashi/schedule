@@ -179,14 +179,14 @@ try{
 	"googleevent_id,".
 	"recurrence_id".
 	" FROM tbl_schedule_onetime WHERE delflag!=1 AND cancel!='c' AND ymd BETWEEN ? AND ? ";
-	if ($request_member_no > 0) {
+	if ($request_user_id > 0) {
 		$sql .= " AND where user_id= ?";
 	}
 	$stmt = $dbh->prepare($sql);
 	$stmt->bindValue(1, $request_startdate, PDO::PARAM_STR);
 	$stmt->bindValue(2, $request_enddate, PDO::PARAM_STR);
-	if ($request_member_no > 0) {
-		$stmt->bindValue(3, $request_member_no, PDO::PARAM_INT);
+	if ($request_user_id > 0) {
+		$stmt->bindValue(3, $request_user_id, PDO::PARAM_INT);
 	}
 	$stmt->execute();
         $schedule_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
