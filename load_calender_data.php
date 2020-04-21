@@ -102,8 +102,6 @@ if (!$request_user_id){
 mb_regex_encoding("UTF-8");
 $teacher_list = get_teacher_list($db);
 $member_list = get_member_list($db);
-			// レッスンリストの取得
-
 $now = date('Y-m-d H:i:s');
 
 try{
@@ -419,9 +417,10 @@ try{
                         "cal_evt_summary, ".
                         "cal_evt_location, ".
                         "cal_evt_description, ".
+                        "insert_datetime, ".
                         "update_datetime, ".
                         "place_floors".
-                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			$stmt = $db->prepare($sql);
 			$stmt->bindValue(1, $schedule_id, PDO::PARAM_INT);
 			$stmt->bindValue(2, $staff_no, PDO::PARAM_INT);
@@ -439,7 +438,8 @@ try{
 			$stmt->bindValue(14, $googlecal_evt_location, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->bindValue(15, $googlecal_evt_description, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->bindValue(16, $now, PDO::PARAM_STR);   
-			$stmt->bindValue(17, $place_id, PDO::PARAM_INT);  // setting place_floors. 
+			$stmt->bindValue(17, $now, PDO::PARAM_STR);   
+			$stmt->bindValue(18, $place_id, PDO::PARAM_INT);  // setting place_floors. 
 			$stmt->execute();
                
 		 }  else {			// スタッフでない場合
@@ -488,13 +488,14 @@ try{
                         " cal_attendance_data, ".
                         " cal_evt_location, ".
                         " cal_evt_description, ".
+                        " insert_datetime, ".
                         " update_datetime, ".
                         " seikyu_year, ".
                         " seikyu_month,".
                         " recurringEvent, ".
                         " grade, ".
                         " monthly_fee_flag ".
-                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         $stmt = $db->prepare($sql);
 			$stmt->bindValue(1, $schedule_id, PDO::PARAM_STR);
 			$stmt->bindValue(2, $member_no, PDO::PARAM_STR);
@@ -532,22 +533,23 @@ try{
 			$stmt->bindValue(33, $googlecal_evt_location, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->bindValue(34, $googlecal_evt_description, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->bindValue(35, $now, PDO::PARAM_STR);   
-			$stmt->bindValue(36, $request_year, PDO::PARAM_STR);   
-			$stmt->bindValue(37, $request_month, PDO::PARAM_STR);   
-			$stmt->bindValue(38, $recurringEvent, PDO::PARAM_STR);   
-			$stmt->bindValue(39, $grade, PDO::PARAM_STR);   
-			$stmt->bindValue(40, $monthly_fee_flag, PDO::PARAM_STR);  // NULL値をセット 
+			$stmt->bindValue(36, $now, PDO::PARAM_STR);   
+			$stmt->bindValue(37, $request_year, PDO::PARAM_STR);   
+			$stmt->bindValue(38, $request_month, PDO::PARAM_STR);   
+			$stmt->bindValue(39, $recurringEvent, PDO::PARAM_STR);   
+			$stmt->bindValue(40, $grade, PDO::PARAM_STR);   
+			$stmt->bindValue(41, $monthly_fee_flag, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->execute();
 		}	// スタッフでない場合
         }		// end of foreach
 
 exit_label:
 }catch (PDOException $e){
-	print_r('insert_calender_event:failed: ' . $e->getMessage());
+	print_r('insert_calender_event:failed:' . $e->getMessage());
 	return false;
 }
 
-// レクチャIDからレッスンID,コースID、科目IDを取得する
+			// レクチャIDからレッスンID,コースID、科目IDを取得する
 function get_lecture_vector(&$db,$lecture_id) {
         $sql = "SELECT lesson_id,course_id,subject_id FROM tbl_lecture WHERE lecture_id = ?";
         $stmt = $db->prepare($sql);
