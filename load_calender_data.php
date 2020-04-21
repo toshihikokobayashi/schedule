@@ -547,7 +547,7 @@ try{
 
 exit_label:
 }catch (PDOException $e){
-	print_r('insert_calender_event:failed: ' . $e->getMessage());
+	print_r('insert_calender_event:failed:' . $e->getMessage());
 	return false;
 }
 
