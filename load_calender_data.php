@@ -141,7 +141,7 @@ try{
 			$request_member_no_str = '0'.$request_member_no_str;
 		}
 
-		$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? AND member_no = ? ".
+		$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? AND member_no = ? ";
 		$stmt = $db->prepare($sql);
 		$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
 		$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
@@ -180,7 +180,7 @@ try{
 	"recurrence_id".
 	" FROM tbl_schedule_onetime WHERE delflag!=1 AND cancel!='c' AND ymd BETWEEN ? AND ? ";
 	if ($request_user_id > 0) {
-		$sql .= " AND where user_id= ?";
+		$sql .= " AND user_id= ?";
 	}
 	$stmt = $dbh->prepare($sql);
 	$stmt->bindValue(1, $request_startdate, PDO::PARAM_STR);
