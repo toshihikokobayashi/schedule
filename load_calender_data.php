@@ -551,7 +551,7 @@ exit_label:
 	return false;
 }
 
-// レクチャIDからレッスンID,コースID、科目IDを取得する
+			// レクチャIDからレッスンID,コースID、科目IDを取得する
 function get_lecture_vector(&$db,$lecture_id) {
         $sql = "SELECT lesson_id,course_id,subject_id FROM tbl_lecture WHERE lecture_id = ?";
         $stmt = $db->prepare($sql);
