@@ -101,7 +101,6 @@ $member_list = get_member_list($db);
 $now = date('Y-m-d H:i:s');
 
 try{
-
 	$sql = "SELECT insert_timestamp FROM tbl_fixed WHERE year=? AND month=?";
 	$stmt = $db->prepare($sql);
 	$stmt->bindValue(1, $request_year, PDO::PARAM_INT);
