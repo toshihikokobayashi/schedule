@@ -769,7 +769,7 @@ try{
 	if ($m2metime_ts < $endofday_ts) { 		//その日の終了時間まで自習時間がある
 		$start_timestamp = $crnt_ts ;
 		$end_timestamp = $endofday_ts ;
-	  			 // Initialization.
+	  			 	// Initialization.
 	 	$temporary = 0; 
   		$trial_id = ""; 
  	 	$alternate = ""; 
