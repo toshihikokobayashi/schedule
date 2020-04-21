@@ -505,7 +505,6 @@ while ($tmp_end_id < $end_id){
 }
 
 
-
 }catch (PDOException $e){
         print_r('exception: ' . $e->getMessage());
         return false;
