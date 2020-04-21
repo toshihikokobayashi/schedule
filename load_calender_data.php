@@ -5,13 +5,17 @@ ini_set( 'display_errors', 0 );
 $err_flag = false ;
 $errArray = array();
 
-$request_year = $_GET['year'];
+$request_year = $_POST['year'];
 $request_year = str_replace("'","",$request_year);
 $request_year = str_replace('"',"",$request_year);
 
-$request_month = $_GET['month'];
+$request_month = $_POST['month'];
 $request_month = str_replace("'","",$request_month);
 $request_month = str_replace('"',"",$request_month);
+
+$request_user_id = $_POST['user_id'];
+$request_user_id = str_replace("'","",$request_user_id);
+$request_user_id = str_replace('"',"",$request_user_id);
 
 require_once "./const/const.inc";
 require_once "./func.inc";
