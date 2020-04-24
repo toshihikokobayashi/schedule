@@ -417,7 +417,6 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
 } 	// end of for each tbl_season_classentry_data.
 
 			// 先生の演習時間入力
-			// retrieve tbl_season_class_entry_date ( this has no teacher data.)
 $sql = "SELECT no,date,times FROM tbl_season_class_teacher_entry1 ";
 $sql .= " WHERE date LIKE ? OR date LIKE ? ORDER BY date,no";
 $stmt = $db->prepare($sql);
@@ -862,7 +861,7 @@ try{
 							// 先生の立ち合いスケジュール作成
 $startymd = date('Y/m/d',$attendstime_ts);
 							// 講習予定を検索する。なければ立ち合いなし
-$sql = "SELECT * FROM tbl_schedule_onetime WHERE teacher_id=? AND ymd=? AND delflag=0 AND work_id=10 ";
+$sql = "SELECT * FROM tbl_schedule_onetime WHERE teacher_id=? AND ymd=? AND delflag=0 AND work_id=10 ORDER BY starttime ";
 $stmt = $dbh->prepare($sql);
 $stmt->bindValue(1, $teacher_id, PDO::PARAM_INT);	 
 $stmt->bindValue(2, $startymd, PDO::PARAM_STR);
@@ -947,7 +946,7 @@ foreach ( $teacherattend_schedule_array as $row ) {
 	}		// end of foreach.
 			// no more man2man recod but not reach the end of day. Then insert selfstudy record.
 
-	if ($worketime_ts < $attendetime_ts) { 		//その日の終了時間まで授業がある
+	if ($worketime_ts < $attendetime_ts) { 		//その日の終了時間まで演習がある
 		$start_timestamp = $crnt_ts ;
 		$end_timestamp = $attendetime_ts ;
 
