@@ -362,7 +362,7 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
 					$subject_id);
 
 		if ($start_id ===0){			// 挿入データの最初のid
-			$sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
+			$sql = "SELECT MAX(id) FROM tbl_schedule_onetime where delflag=0";
 			$stmt = $dbh->prepare($sql);
 			$stmt->execute();
 			$start_id = (int)$stmt->fetchColumn() ;
@@ -479,7 +479,7 @@ foreach ( $season_teacherattend_array as $row ) {
 
 }
 
-$sql = "SELECT MAX(id) FROM tbl_schedule_onetime ";
+$sql = "SELECT MAX(id) FROM tbl_schedule_onetime where delflag=0 ";
 $stmt = $dbh->prepare($sql);
 $stmt->execute();
 $end_id = (int)$stmt->fetchColumn();
