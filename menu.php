@@ -390,6 +390,8 @@ function blankCheck() {
 	<input type="text" name="month" value="<?php echo $month1; ?>" size="4">月分&nbsp;
 	限定する生徒番号（全生徒の場合空白）：
 	<input type="text" name="user_id" value="" size="4">&nbsp;
+	置換モード（replace）：
+	<input type="text" name="force" value="" size="4">&nbsp;
 	<input type="submit" value="実行">
 	</form>
 	<br>
