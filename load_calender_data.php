@@ -161,14 +161,13 @@ try{
 			$message = 'Error: target month has been already set up. use replace mode to replace them.';
 			array_push($errArray,$message);
 			goto exit_label;
-		} else { 			// the parameter replace is specified. Then delete existing data.
+		} 
+	} else { 			// the parameter replace is specified. Then delete existing data.
 			$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? ";
 			$stmt = $db->prepare($sql);
 			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
 			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
 			$stmt->execute();
-		}
-
 	}
 
 
