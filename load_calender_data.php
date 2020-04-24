@@ -17,9 +17,9 @@ $request_user_id = $_POST['user_id'];
 $request_user_id = str_replace("'","",$request_user_id);
 $request_user_id = str_replace('"',"",$request_user_id);
 
-$request_force = $_POST['force'];
-$request_force = str_replace("'","",$request_force);
-$request_force = str_replace('"',"",$request_force);
+$request_replace = $_POST['replace'];
+$request_replace = str_replace("'","",$request_replace);
+$request_replace = str_replace('"',"",$request_replace);
 
 require_once "./const/const.inc";
 require_once "./func.inc";
@@ -149,7 +149,7 @@ try{
 		$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
 		$stmt->bindValue(3, $request_member_no_str, PDO::PARAM_STR);
 		$stmt->execute();
-	} else if (!$request_force) { 		// the parameter force is not specified. Then if the data exist, notify an error.
+	} else if (!$request_replace) { 		// the parameter replace is not specified. Then if the data exist, notify an error.
 		$sql = "SELECT COUNT(*) AS COUNT FROM tbl_event where event_year = ? AND event_month = ? ";
 		$stmt = $db->prepare($sql);
 		$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
@@ -158,10 +158,17 @@ try{
 		$already_exist = (int)$stmt->fetchColumn();
 		if ($already_exist > 0) {
 			$err_flag = true;
-			$message = 'Error: target month has been already set up. use force to remove them.';
+			$message = 'Error: target month has been already set up. use replace mode to replace them.';
 			array_push($errArray,$message);
 			goto exit_label;
+		} else { 			// the parameter replace is specified. Then delete existing data.
+			$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? ";
+			$stmt = $db->prepare($sql);
+			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
+			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
+			$stmt->execute();
 		}
+
 	}
 
 
