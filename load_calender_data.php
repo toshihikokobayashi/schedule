@@ -17,6 +17,10 @@ $request_user_id = $_POST['user_id'];
 $request_user_id = str_replace("'","",$request_user_id);
 $request_user_id = str_replace('"',"",$request_user_id);
 
+$request_force = $_POST['force'];
+$request_force = str_replace("'","",$request_force);
+$request_force = str_replace('"',"",$request_force);
+
 require_once "./const/const.inc";
 require_once "./func.inc";
 require_once("./const/login_func.inc");
@@ -65,7 +69,7 @@ if (!$request_year){
 	goto exit_label;
 }
 
-if ($request_year < 2015 ){
+if ($request_year < 2020 ){
 	$err_flag = true;
 	$message = 'Error: request_year is not correct.';
 	array_push($errArray,$message);
@@ -112,18 +116,18 @@ try{
 	$stmt->execute();
 	$rslt = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-	if (!$rslt){ // not found
+	if (!$rslt){ 		// not found
 		$err_flag = true;
 		$message = 'Error: target data is not commited.';
 		array_push($errArray,$message);
 		goto exit_label;
 	}
 
+	$request_year_str = (string)$request_year;
+	$request_month_str = (string)$request_month;
+
 	if ($request_user_id > 0) {
 				// 当該月の当該user_idのデータをtbl_eventから削除する
-		$request_year_str = (string)$request_year;
-
-		$request_month_str = (string)$request_month;
 
 		$request_member_no_str = (string)$request_user_id;
 				// adjusting member_no to 6 digits.
@@ -145,6 +149,19 @@ try{
 		$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
 		$stmt->bindValue(3, $request_member_no_str, PDO::PARAM_STR);
 		$stmt->execute();
+	} else if (!$request_force) { 		// the parameter force is not specified. Then if the data exist, notify an error.
+		$sql = "SELECT COUNT(*) AS COUNT FROM tbl_event where event_year = ? AND event_month = ? ";
+		$stmt = $db->prepare($sql);
+		$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
+		$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
+		$stmt->execute();
+		$already_exist = (int)$stmt->fetchColumn();
+		if ($already_exist > 0) {
+			$err_flag = true;
+			$message = 'Error: target month has been already set up. use force to remove them.';
+			array_push($errArray,$message);
+			goto exit_label;
+		}
 	}
 
 
