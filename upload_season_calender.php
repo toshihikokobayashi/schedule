@@ -82,6 +82,7 @@ define('ABSENT2TODAY','休み２当日');
 define('TODAY','当日');
 define('ALTERNATE','振替');
 
+define('TEACHERATTEND',5);
 define('SEASON',10);
 define('SEASONSS',11);
 
@@ -92,18 +93,20 @@ $const_today = TODAY;
 $const_alternate = ALTERNATE;		
 
 $target_work_id = SEASON;		// for season and weekend seminar m2m only. shortname is 'season'.
-$target_work_id2 = SEASONSS;		// for season and weekend seminar selfstudy only. shortname is 'ss'.
+$target_work_id2 = SEASONSS;		// for season and weekend seminar selfstudy only. shortname is 'seasonss'.
+$target_work_id3 = TEACHERATTEND;	// for season and weekend seminar attend only. shortname is 'ss'.
 
 			// check whether schedule for the month is set.
 $startofmonth = $request_startyear.'-'.$request_startmonth_str.'-01';
 $endofmonth = $request_endyear.'-'.$request_endmonth_str.'-31';
 try{
-$sql = "SELECT COUNT(*) AS COUNT FROM tbl_schedule_onetime WHERE ( work_id=?  OR work_id=? ) AND delflag=0 AND ymd BETWEEN ? AND ?";
+$sql = "SELECT COUNT(*) AS COUNT FROM tbl_schedule_onetime WHERE (work_id=? OR work_id=? OR work_id=?) AND delflag=0 AND ymd BETWEEN ? AND ?";
 $stmt = $dbh->prepare($sql);
 $stmt->bindValue(1, $target_work_id, PDO::PARAM_INT);
 $stmt->bindValue(2, $target_work_id2, PDO::PARAM_INT);
-$stmt->bindValue(3, $startofmonth, PDO::PARAM_STR);
-$stmt->bindValue(4, $endofmonth, PDO::PARAM_STR);
+$stmt->bindValue(3, $target_work_id3, PDO::PARAM_INT);
+$stmt->bindValue(4, $startofmonth, PDO::PARAM_STR);
+$stmt->bindValue(5, $endofmonth, PDO::PARAM_STR);
 $stmt->execute();
 $already_exist = (int)$stmt->fetchColumn();
 if ($already_exist > 0) {			// Already exsit target year month data.
@@ -119,13 +122,14 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 	// if there is, logical delete the data.
 	$sql = "SELECT id FROM tbl_schedule_onetime ";
 
-	$sql .= " WHERE delflag=0 AND confirm!='f' AND ( work_id=?  OR work_id=? ) AND ymd BETWEEN ? AND ? ORDER BY id";
+	$sql .= " WHERE delflag=0 AND confirm!='f' AND (work_id=? OR work_id=? OR work_id=?) AND ymd BETWEEN ? AND ? ORDER BY id";
 
 	$stmt = $dbh->prepare($sql);
 	$stmt->bindValue(1, $target_work_id, PDO::PARAM_INT);
 	$stmt->bindValue(2, $target_work_id2, PDO::PARAM_INT);
-	$stmt->bindValue(3, $startofmonth, PDO::PARAM_STR);
-	$stmt->bindValue(4, $endofmonth, PDO::PARAM_STR);
+	$stmt->bindValue(3, $target_work_id3, PDO::PARAM_INT);
+	$stmt->bindValue(4, $startofmonth, PDO::PARAM_STR);
+	$stmt->bindValue(5, $endofmonth, PDO::PARAM_STR);
 	$stmt->execute();
 	$start_id = 0;
 	$schedule_onetime_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
