@@ -331,6 +331,7 @@ try{
 			}
 		} else if ($user_id == 1 ) { // try student
 			$member_cal_name = CONST_TRYSTUDENT;
+			$evt_summary = $evt_summary.$member_cal_name;
 			$evt_summary = $evt_summary.CONST_SAMA;
 		} else if ($user_id < 0 ) { // student not defined.
 			if ($comment !== ' '){
