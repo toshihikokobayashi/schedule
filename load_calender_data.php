@@ -324,7 +324,7 @@ try{
 			$result = $stmt->fetch(PDO::FETCH_ASSOC);
 			$staff_cal_name = $result['name'];
 			$evt_summary = $evt_summary.$staff_cal_name;
-			$event_summary = $event_summary.$CONST_SAN;
+			$evt_summary = $evt_summary.CONST_SAN;
 
 		} else if ($user_id > 100000 ) { // teacher
 			$member_cal_name = ' ';
