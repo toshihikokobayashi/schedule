@@ -274,6 +274,9 @@ try{
 		$event_diff_hours = ($event_end_timestamp - $event_start_timestamp) / (60*60);
 
 		$evt_summary = '';			// Initialization.
+		$lesson_id = 0;
+		$course_id = 0;
+		$subject_id = 0;
 
 		$lecture_list = get_lecture_vector($db,$lecture_id);
 		$row_cnt = count($lecture_list) ;
@@ -392,7 +395,7 @@ try{
 			$evt_summary = $evt_summary.CONST_CLOSING ;
 		}
 
-		if ($subject_id) {		// setting subject name 
+		if ($subject_id > 0 ) {		// setting subject name 
 			$evt_summary = $evt_summary.CONST_COLON ;
 			$evt_summary = $evt_summary.$subject_list[$subject_id];
 		}
