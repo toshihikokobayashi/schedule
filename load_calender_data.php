@@ -142,13 +142,21 @@ try{
 		} else if (strlen($request_member_no_str) === 5){
 			$request_member_no_str = '0'.$request_member_no_str;
 		}
-
-		$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? AND member_no = ? ";
-		$stmt = $db->prepare($sql);
-		$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
-		$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
-		$stmt->bindValue(3, $request_member_no_str, PDO::PARAM_STR);
-		$stmt->execute();
+		if ($request_user_id < 100000 ){
+			$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? AND member_no = ? ";
+			$stmt = $db->prepare($sql);
+			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
+			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
+			$stmt->bindValue(3, $request_member_no_str, PDO::PARAM_STR);
+			$stmt->execute();
+		} else {
+			$sql = "DELETE FROM tbl_event_staff where event_year = ? AND event_month = ? AND member_no = ? ";
+			$stmt = $db->prepare($sql);
+			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
+			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
+			$stmt->bindValue(3, $request_member_no_str, PDO::PARAM_STR);
+			$stmt->execute();
+		}
 	} else if (!$request_replace) { 		// the parameter replace is not specified. Then if the data exist, notify an error.
 		$sql = "SELECT COUNT(*) AS COUNT FROM tbl_event where event_year = ? AND event_month = ? ";
 		$stmt = $db->prepare($sql);
@@ -164,6 +172,13 @@ try{
 		} 
 	} else { 			// the parameter replace is specified. Then delete existing data.
 			$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? ";
+			$stmt = $db->prepare($sql);
+			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
+			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
+			$stmt->execute();
+
+					// the parameter replace is specified. Then delete existing data.
+			$sql = "DELETE FROM tbl_event_staff where event_year = ? AND event_month = ? ";
 			$stmt = $db->prepare($sql);
 			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
 			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
