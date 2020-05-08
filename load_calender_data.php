@@ -214,7 +214,7 @@ try{
 	"googlecal_id,".
 	"googleevent_id,".
 	"recurrence_id".
-	" FROM tbl_schedule_onetime WHERE delflag!=1 AND cancel!='c' AND ymd BETWEEN ? AND ? ";
+	" FROM tbl_schedule_onetime WHERE delflag!=1 AND (cancel IS NULL OR cancel!='c') AND ymd BETWEEN ? AND ? ";
 	if ($request_user_id > 0) {
 		$sql .= " AND user_id= ?";
 	}
