@@ -6,7 +6,7 @@ connect_DB($db);
 $dbh = null;
 connect_DBH($dbh);
 $dbc = null;
-connect_DBC($dbc);	// calender db connect.
+connect_DBC($dbc);
 
 mb_regex_encoding("UTF-8");
 
