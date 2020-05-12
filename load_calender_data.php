@@ -519,6 +519,7 @@ try{
                         " course_id, ".
                         " teacher_id, ".
                         " place_floors, ".
+                        " place_id, ".
                         " absent_flag, ".
                         " trial_flag, ".
                         " interview_flag, ".
@@ -540,7 +541,7 @@ try{
                         " recurringEvent, ".
                         " grade, ".
                         " monthly_fee_flag ".
-                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         $stmt = $db->prepare($sql);
 			$stmt->bindValue(1, $schedule_id, PDO::PARAM_STR);
 			$stmt->bindValue(2, $member_no, PDO::PARAM_STR);
@@ -562,28 +563,29 @@ try{
 			$stmt->bindValue(18, $course_id, PDO::PARAM_STR);  
 			$stmt->bindValue(19, $teacher_id, PDO::PARAM_STR);
 			$stmt->bindValue(20, $place_id, PDO::PARAM_INT); 	// setting place_floors column . 
-			$stmt->bindValue(21, $absent_flag, PDO::PARAM_STR);
-			$stmt->bindValue(22, $trial_flag, PDO::PARAM_STR);  
-			$stmt->bindValue(23, $interview_flag, PDO::PARAM_STR);  
-			$stmt->bindValue(24, $alternative_flag, PDO::PARAM_STR);  
-			$stmt->bindValue(25, $absent1_num, PDO::PARAM_INT);  
-			$stmt->bindValue(26, $absent2_num, PDO::PARAM_INT);  
-			$stmt->bindValue(27, $trial_num, PDO::PARAM_INT);  
-			$stmt->bindValue(28, $repeat_flag, PDO::PARAM_INT);  
-			$stmt->bindValue(29, $googlecal_id, PDO::PARAM_STR);   
-			$stmt->bindValue(30, $googlecal_summary, PDO::PARAM_STR);  // NULL値をセット 
-			$stmt->bindValue(31, $evt_summary, PDO::PARAM_STR);  
+			$stmt->bindValue(21, $place_id, PDO::PARAM_INT); 	// setting place_floors column . 
+			$stmt->bindValue(22, $absent_flag, PDO::PARAM_STR);
+			$stmt->bindValue(23, $trial_flag, PDO::PARAM_STR);  
+			$stmt->bindValue(24, $interview_flag, PDO::PARAM_STR);  
+			$stmt->bindValue(25, $alternative_flag, PDO::PARAM_STR);  
+			$stmt->bindValue(26, $absent1_num, PDO::PARAM_INT);  
+			$stmt->bindValue(27, $absent2_num, PDO::PARAM_INT);  
+			$stmt->bindValue(28, $trial_num, PDO::PARAM_INT);  
+			$stmt->bindValue(29, $repeat_flag, PDO::PARAM_INT);  
+			$stmt->bindValue(30, $googlecal_id, PDO::PARAM_STR);   
+			$stmt->bindValue(31, $googlecal_summary, PDO::PARAM_STR);  // NULL値をセット 
+			$stmt->bindValue(32, $evt_summary, PDO::PARAM_STR);  
 			$cal_attendance_data = $evt_summary ; 
-			$stmt->bindValue(32, $cal_attendance_data, PDO::PARAM_STR);  // $evt_summary と同じ値をセット 
-			$stmt->bindValue(33, $googlecal_evt_location, PDO::PARAM_STR);  // NULL値をセット 
-			$stmt->bindValue(34, $googlecal_evt_description, PDO::PARAM_STR);  // NULL値をセット 
-			$stmt->bindValue(35, $now, PDO::PARAM_STR);   
+			$stmt->bindValue(33, $cal_attendance_data, PDO::PARAM_STR);  // $evt_summary と同じ値をセット 
+			$stmt->bindValue(34, $googlecal_evt_location, PDO::PARAM_STR);  // NULL値をセット 
+			$stmt->bindValue(35, $googlecal_evt_description, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->bindValue(36, $now, PDO::PARAM_STR);   
-			$stmt->bindValue(37, $request_year, PDO::PARAM_STR);   
-			$stmt->bindValue(38, $request_month, PDO::PARAM_STR);   
-			$stmt->bindValue(39, $recurringEvent, PDO::PARAM_STR);   
-			$stmt->bindValue(40, $grade, PDO::PARAM_STR);   
-			$stmt->bindValue(41, $monthly_fee_flag, PDO::PARAM_STR);  // NULL値をセット 
+			$stmt->bindValue(37, $now, PDO::PARAM_STR);   
+			$stmt->bindValue(38, $request_year, PDO::PARAM_STR);   
+			$stmt->bindValue(39, $request_month, PDO::PARAM_STR);   
+			$stmt->bindValue(40, $recurringEvent, PDO::PARAM_STR);   
+			$stmt->bindValue(41, $grade, PDO::PARAM_STR);   
+			$stmt->bindValue(42, $monthly_fee_flag, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->execute();
 		}	// スタッフでない場合
         }		// end of foreach
