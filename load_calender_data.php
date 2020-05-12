@@ -348,6 +348,8 @@ try{
 				}
 			}
 		} else if ($user_id == 1 ) { // try student
+			$trial_id = '1'; 
+			$grade = $trial_num;
 			$member_cal_name = CONST_TRYSTUDENT;
 			$evt_summary = $evt_summary.$member_cal_name;
 			$evt_summary = $evt_summary.CONST_SAMA;
@@ -360,6 +362,7 @@ try{
 			$evt_summary = $evt_summary.$member_cal_name;
 			$evt_summary = $evt_summary.CONST_SAMA;
 			if ($trial_num > 0 ) {
+				$trial_id = '1'; 
 				$grade = $trial_num;
 			}
 		}
