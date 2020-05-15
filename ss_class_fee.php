@@ -8,7 +8,7 @@ $result = check_user($db, "1");
 $errArray = array();
 $message = "";
 
-$table_no = 3;	// After 2019/11
+$table_no = 4;	// After 2020/2
 
 if (isset($_POST['add'])) {
 	$action = 'add';
@@ -52,20 +52,25 @@ if ($action == "add") {
 	
 	try{
 		$db->beginTransaction();
-		$sql = "INSERT INTO tbl_season_class_lesson_fee (no, course, grade, fee, jyukensei_flag, insert_timestamp, update_timestamp) ".
-						"VALUES ($table_no,?,?,?,?,now(),now()) ".
-						"ON DUPLICATE KEY UPDATE fee=?, update_timestamp=now()";
-		$stmt = $db->prepare($sql);
-		lesson_db($stmt, LESSON60, $fees60);
-		lesson_db($stmt, LESSON90, $fees90);
-		lesson_db($stmt, LESSON120, $fees120);
-		$sql = "INSERT INTO tbl_season_class_exercise_fee (no, course, type, fee, insert_timestamp, update_timestamp) ".
-						"VALUES ($table_no,?,?,?,now(),now()) ".
-						"ON DUPLICATE KEY UPDATE fee=?, update_timestamp=now()";
-		$stmt = $db->prepare($sql);
-		exercise_db($stmt, LESSON60, $fees60);
-		exercise_db($stmt, LESSON90, $fees90);
-		exercise_db($stmt, LESSON120, $fees120);
+		for ($i=$table_no;$i>0;$i--) {
+			$sql = "INSERT INTO tbl_season_class_lesson_fee (no, course, grade, fee, jyukensei_flag, insert_timestamp, update_timestamp) ".
+							"VALUES ($i,?,?,?,?,now(),now()) ".
+							"ON DUPLICATE KEY UPDATE fee=?, update_timestamp=now()";
+			$stmt = $db->prepare($sql);
+			lesson_db($stmt, LESSON60, $fees60);
+			lesson_db($stmt, LESSON90, $fees90);
+			lesson_db($stmt, LESSON120, $fees120);
+			$sql = "INSERT INTO tbl_season_class_exercise_fee (no, course, type, fee, insert_timestamp, update_timestamp) ".
+							"VALUES ($i,?,?,?,now(),now()) ".
+							"ON DUPLICATE KEY UPDATE fee=?, update_timestamp=now()";
+			$stmt = $db->prepare($sql);
+			exercise_db($stmt, LESSON60, $fees60);
+			exercise_db($stmt, LESSON90, $fees90);
+			exercise_db($stmt, LESSON120, $fees120);
+			array_splice($fees60, 0, 11);
+			array_splice($fees90, 0, 11);
+			array_splice($fees120, 0, 11);
+		}
 		$db->commit();
 	} catch (PDOException $e){
 		$db->rollback();
@@ -153,7 +158,7 @@ if ($action=='add' && count($errArray)==0) {
 　<input type="submit" name="unfix" value="確定解除" onclick="form1.nocheck.value='nocheck'">
 <br>
 <input name="nocheck" type="hidden" value="">
-<h4>2019年11月以降入会者</h4>
+<h4>2020年2月以降入会者</h4>
 <table border="1">
 <tr>
 <td align="center" rowspan="2">コース</td>
@@ -260,7 +265,114 @@ if ($action=='add' && count($errArray)==0) {
 </tr>
 <?php } ?>
 </table>
-</form>
+<br>
+<h4>2019年11月～2020年1月入会者</h4>
+<table border="1">
+<tr>
+<td align="center" rowspan="2">コース</td>
+<td align="center" colspan="7">マンツーマン受講料</td>
+<td align="center" colspan="3">期間講習演習</td>
+<td align="center" rowspan="2">土日講習<br>演習</td>
+<tr>
+<td align="center">小学生<br>１-６年</td>
+<td align="center">中学受験生<br>４-５年</td>
+<td align="center">中学受験生<br>６年</td>
+<td align="center">中学生<br>１-２年</td>
+<td align="center">中学生<br>３年</td>
+<td align="center">高校生<br>１-２年</td>
+<td align="center">高校生<br>３年</td>
+<td align="center">受講日数<br>夏1-14<br>春冬1-9</td>
+<td align="center">受講日数<br>夏15-19<br>春冬10-14</td>
+<td align="center">受講日数<br>夏20-<br>春冬15-</td>
+</tr>
+<?php if ($fixedflag) { ?>
+<tr>
+<td>60分コース</td>
+<td><?= $lesson_fee_table[2][2][LESSON60][0]  ?></td>
+<td><?= $lesson_fee_table[2][5][LESSON60][1]  ?></td>
+<td><?= $lesson_fee_table[2][7][LESSON60][1]  ?></td>
+<td><?= $lesson_fee_table[2][8][LESSON60][0]  ?></td>
+<td><?= $lesson_fee_table[2][10][LESSON60][0] ?></td>
+<td><?= $lesson_fee_table[2][11][LESSON60][0] ?></td>
+<td><?= $lesson_fee_table[2][13][LESSON60][0] ?></td>
+<td><?= $exercise_fee_table[2][LESSON60][0] ?></td>
+<td><?= $exercise_fee_table[2][LESSON60][1] ?></td>
+<td><?= $exercise_fee_table[2][LESSON60][2] ?></td>
+<td><?= $exercise_fee_table[2][LESSON60][3] ?></td>
+</tr>
+<tr>
+<td>90分コース</td>
+<td><?= $lesson_fee_table[2][2][LESSON90][0]  ?></td>
+<td><?= $lesson_fee_table[2][5][LESSON90][1]  ?></td>
+<td><?= $lesson_fee_table[2][7][LESSON90][1]  ?></td>
+<td><?= $lesson_fee_table[2][8][LESSON90][0]  ?></td>
+<td><?= $lesson_fee_table[2][10][LESSON90][0] ?></td>
+<td><?= $lesson_fee_table[2][11][LESSON90][0] ?></td>
+<td><?= $lesson_fee_table[2][13][LESSON90][0] ?></td>
+<td><?= $exercise_fee_table[2][LESSON90][0] ?></td>
+<td><?= $exercise_fee_table[2][LESSON90][1] ?></td>
+<td><?= $exercise_fee_table[2][LESSON90][2] ?></td>
+<td><?= $exercise_fee_table[2][LESSON90][3] ?></td>
+</tr>
+<tr>
+<td>120分コース</td>
+<td><?= $lesson_fee_table[2][2][LESSON120][0]  ?></td>
+<td><?= $lesson_fee_table[2][5][LESSON120][1]  ?></td>
+<td><?= $lesson_fee_table[2][7][LESSON120][1]  ?></td>
+<td><?= $lesson_fee_table[2][8][LESSON120][0]  ?></td>
+<td><?= $lesson_fee_table[2][10][LESSON120][0] ?></td>
+<td><?= $lesson_fee_table[2][11][LESSON120][0] ?></td>
+<td><?= $lesson_fee_table[2][13][LESSON120][0] ?></td>
+<td><?= $exercise_fee_table[2][LESSON120][0] ?></td>
+<td><?= $exercise_fee_table[2][LESSON120][1] ?></td>
+<td><?= $exercise_fee_table[2][LESSON120][2] ?></td>
+<td><?= $exercise_fee_table[2][LESSON120][3] ?></td>
+</tr>
+<?php } else { ?>
+<tr>
+<td>60分コース</td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][2][LESSON60][0]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][5][LESSON60][1]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][7][LESSON60][1]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][8][LESSON60][0]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][10][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][11][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][13][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON60][1] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON60][2] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON60][3] ?>></td>
+</tr>
+<tr>
+<td>90分コース</td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][2][LESSON90][0]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][5][LESSON90][1]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][7][LESSON90][1]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][8][LESSON90][0]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][10][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][11][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][13][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON90][1] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON90][2] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON90][3] ?>></td>
+</tr>
+<tr>
+<td>120分コース</td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][2][LESSON120][0]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][5][LESSON120][1]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][7][LESSON120][1]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][8][LESSON120][0]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][10][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][11][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[2][13][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON120][1] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON120][2] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[2][LESSON120][3] ?>></td>
+</tr>
+<?php } ?>
+</table>
 <br>
 <h4>2018年9月～2019年10月入会者</h4>
 <table border="1">
@@ -281,6 +393,7 @@ if ($action=='add' && count($errArray)==0) {
 <td align="center">受講日数<br>夏15-19<br>春冬10-14</td>
 <td align="center">受講日数<br>夏20-<br>春冬15-</td>
 </tr>
+<?php if ($fixedflag) { ?>
 <tr>
 <td>60分コース</td>
 <td><?= $lesson_fee_table[1][2][LESSON60][0]  ?></td>
@@ -323,6 +436,50 @@ if ($action=='add' && count($errArray)==0) {
 <td><?= $exercise_fee_table[1][LESSON120][2] ?></td>
 <td><?= $exercise_fee_table[1][LESSON120][3] ?></td>
 </tr>
+<?php } else { ?>
+<tr>
+<td>60分コース</td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][2][LESSON60][0]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][5][LESSON60][1]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][7][LESSON60][1]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][8][LESSON60][0]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][10][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][11][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][13][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON60][1] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON60][2] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON60][3] ?>></td>
+</tr>
+<tr>
+<td>90分コース</td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][2][LESSON90][0]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][5][LESSON90][1]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][7][LESSON90][1]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][8][LESSON90][0]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][10][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][11][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][13][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON90][1] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON90][2] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON90][3] ?>></td>
+</tr>
+<tr>
+<td>120分コース</td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][2][LESSON120][0]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][5][LESSON120][1]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][7][LESSON120][1]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][8][LESSON120][0]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][10][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][11][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[1][13][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON120][1] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON120][2] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[1][LESSON120][3] ?>></td>
+</tr>
+<?php } ?>
 </table>
 <br>
 <h4>2018年8月以前入会者</h4>
@@ -344,6 +501,7 @@ if ($action=='add' && count($errArray)==0) {
 <td align="center">受講日数<br>夏15-19<br>春冬10-14</td>
 <td align="center">受講日数<br>夏20-<br>春冬15-</td>
 </tr>
+<?php if ($fixedflag) { ?>
 <tr>
 <td>60分コース</td>
 <td><?= $lesson_fee_table[0][2][LESSON60][0]  ?></td>
@@ -386,7 +544,52 @@ if ($action=='add' && count($errArray)==0) {
 <td><?= $exercise_fee_table[0][LESSON120][2] ?></td>
 <td><?= $exercise_fee_table[0][LESSON120][3] ?></td>
 </tr>
+<?php } else { ?>
+<tr>
+<td>60分コース</td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][2][LESSON60][0]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][5][LESSON60][1]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][7][LESSON60][1]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][8][LESSON60][0]  ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][10][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][11][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][13][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON60][0] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON60][1] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON60][2] ?>></td>
+<td><input type="tel" name="fees60[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON60][3] ?>></td>
+</tr>
+<tr>
+<td>90分コース</td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][2][LESSON90][0]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][5][LESSON90][1]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][7][LESSON90][1]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][8][LESSON90][0]  ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][10][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][11][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][13][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON90][0] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON90][1] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON90][2] ?>></td>
+<td><input type="tel" name="fees90[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON90][3] ?>></td>
+</tr>
+<tr>
+<td>120分コース</td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][2][LESSON120][0]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][5][LESSON120][1]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][7][LESSON120][1]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][8][LESSON120][0]  ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][10][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][11][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $lesson_fee_table[0][13][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON120][0] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON120][1] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON120][2] ?>></td>
+<td><input type="tel" name="fees120[]" size="8" maxlength="5" value=<?= $exercise_fee_table[0][LESSON120][3] ?>></td>
+</tr>
+<?php } ?>
 </table>
+</form>
 </div>
 </body>
 </html>

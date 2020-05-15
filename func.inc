@@ -69,16 +69,16 @@ $place_list[5] = array("no"=>"5","name"=>"北口校","calendar_name_list"=>array
 $place_list[6] = array("no"=>"6","name"=>"アローレ校","calendar_name_list"=>array("塾_アローレ校"));
 $place_list[7] = array("no"=>"7","name"=>"ダットッチ校","calendar_name_list"=>array("English_dattochi","習い事_dattochi"));
 $place_list[8] = array("no"=>"8","name"=>"豊田校","calendar_name_list"=>array("English_toyoda","塾_豊田校"));
-$place_list[9] = array("no"=>"9","name"=>"子安校","calendar_name_list"=>array("ピアノ","習い事_子安校","塾_子安校"));
+$place_list[9] = array("no"=>"9","name"=>"子安校","calendar_name_list"=>array("ピアノ","習い事_子安校","塾_子安校","English_koyasu"));
 $place_list[10] = array("no"=>"10","name"=>"国立校","calendar_name_list"=>array("塾_国立校","English_Kunitachi"));
-$place_list[11] = array("no"=>"11","name"=>"北口校２Ｆ","calendar_name_list"=>array("塾_八王子_2F"));
+$place_list[11] = array("no"=>"11","name"=>"北口校２Ｆ","calendar_name_list"=>array("塾_八王子_2F","塾_北口校_2F"));
 
 $tatekae_item_list = array("備品・消耗品費","書籍費","交際費","支払手数料","荷造運賃費","その他");
 
-$season_class_title = '2019年冬期講習';
+$season_class_title = '2020年春期講習';
 //$season_course_id = 4; // 夏期講習
-$season_course_id = 5; // 冬期講習
-//$season_course_id = 6; // 春期講習
+//$season_course_id = 5; // 冬期講習
+$season_course_id = 6; // 春期講習
 
 /* Old season class course
 $season_course_list = array(
@@ -252,27 +252,78 @@ $sat_sun_class_date_list = array(
 "2020/03/08",
 "2020/03/14",
 "2020/03/15",
-"2020/03/20",
-"2020/03/21",
-"2020/03/22",
-"2020/03/28",
-"2020/03/29",
 
-"2020/04/04",
-"2020/04/05",
 "2020/04/11",
 "2020/04/12",
 "2020/04/18",
 "2020/04/19",
 "2020/04/25",
 "2020/04/26",
-"2020/04/29"
+"2020/04/29",
+
+"2020/05/02",
+"2020/05/03",
+"2020/05/04",
+"2020/05/05",
+"2020/05/06",
+"2020/05/09",
+"2020/05/10",
+"2020/05/16",
+"2020/05/17",
+"2020/05/23",
+"2020/05/24",
+"2020/05/30",
+"2020/05/31",
+
+"2020/06/06",
+"2020/06/07",
+"2020/06/13",
+"2020/06/14",
+"2020/06/20",
+"2020/06/21",
+"2020/06/27",
+"2020/06/28"
 
 );
 foreach ($sat_sun_class_date_list as $i=>$item) { if ($i==0) { $sat_sun_class_date_list_string = "('$item'"; } else { $sat_sun_class_date_list_string = $sat_sun_class_date_list_string.",'$item'"; } }
 $sat_sun_class_date_list_string = $sat_sun_class_date_list_string.")";
 
 $date_list = array(
+"2020/03/04",
+"2020/03/05",
+"2020/03/06",
+"2020/03/09",
+"2020/03/10",
+"2020/03/11",
+"2020/03/12",
+"2020/03/13",
+"2020/03/16",
+"2020/03/17",
+"2020/03/18",
+"2020/03/19",
+"2020/03/20",
+"2020/03/21",
+"2020/03/22",
+"2020/03/23",
+"2020/03/24",
+"2020/03/25",
+"2020/03/26",
+"2020/03/27",
+"2020/03/28",
+"2020/03/29",
+"2020/03/30",
+"2020/03/31",
+"2020/04/01",
+"2020/04/02",
+"2020/04/03",
+"2020/04/04",
+"2020/04/05"
+);
+
+$date_list_array = array(
+"2020/3" => $date_list,
+
+"2019/12" => array(
 "2019/12/21",
 "2019/12/22",
 "2019/12/23",
@@ -294,11 +345,7 @@ $date_list = array(
 "2020/01/11",
 "2020/01/12",
 "2020/01/13"
-);
-
-$date_list_array = array(
-"2019/12" => $date_list,
-
+),
 "2019/7" => array(
 "2019/07/20",
 "2019/07/21",
@@ -545,18 +592,13 @@ $except20170830 = $stmt->fetch(PDO::FETCH_NUM);
 if ($except20170830 === false) { $except20170830 = array(); }
 
 // データベース接続
-function connect_DB(&$db,&$lms_db = null) {
+function connect_DB(&$db) {
 	try{
 		$db = new PDO(PDO_DSN, DB_USER, DB_PASSWD);
 		$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		if ($lms_db) {
-			$lms_db = new PDO(LMS_PDO_DSN, LMS_DB_USER, LMS_DB_PASSWD);
-			$lms_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		}
 	}catch (PDOException $e){
-		//$err_msg = 'Connection failed: ' . $e->getMessage();
-		//exit($err_msg);
-		exit('Connection failed');
+		$err_msg = 'Connection failed: ' . $e->getMessage();
+		exit($err_msg);
 	}
 }
 // データベース接続2
@@ -565,9 +607,8 @@ function connect_DBH(&$dbh) {
 		$dbh = new PDO(PDO_DSN2, DB_USER, DB_PASSWD2);
 		$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	}catch (PDOException $e){
-		//$err_msg = 'Connection failed: ' . $e->getMessage();
-		//exit($err_msg);
-		exit('Connection failed');
+		$err_msg = 'connect_DBH Connection failed: ' . $e->getMessage();
+		exit($err_msg);
 	}
 }
 
@@ -577,9 +618,8 @@ function connect_DBC(&$dbc) {
 		$dbc = new PDO(PDO_DSN3, DB_USER3, DB_PASSWD3);
 		$dbc->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	}catch (PDOException $e){
-		//$err_msg = 'Connection failed: ' . $e->getMessage();
-		//exit($err_msg);
-		exit('Connection failed');
+		$err_msg = 'connect_DBC Connection failed: ' . $e->getMessage();
+		exit($err_msg);
 	}
 }
 
@@ -2099,17 +2139,18 @@ function check_number(&$errArray, $name, $value, $not_empty=false) {
 }
 
 
-function insert_student(&$db, $student_array) {
+function insert_student(&$db, $student_array, $last_no=null) {
 	$errFlag = 0;
 	try {
-			$stmt = $db->prepare("INSERT INTO tbl_member_no (insert_timestamp, update_timestamp) VALUES (now(), now())");
-			$stmt->execute();
-			$last_no = $db->lastInsertId();
+			if (!$last_no) {
+				$stmt = $db->prepare("INSERT INTO tbl_member_no (insert_timestamp, update_timestamp) VALUES (now(), now())");
+				$stmt->execute();
+				$last_no = $db->lastInsertId();
+			}
 			$sql = "INSERT INTO tbl_member (no, id, name, furigana, sei, mei, kind, grade, ".
 						" passwd, sheet_id, membership_fee, cid, del_flag, tax_flag, insert_timestamp, update_timestamp, jyukensei, ".
 						" birth_year, birth_month, birth_day, grade_adj, fee_free, yuge_price, gender, mail_address ".
 						" ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), now(), ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
 			$stmt = $db->prepare($sql);
 			$stmt->bindParam(1, $no);
 			$stmt->bindParam(2, $id);
@@ -2840,7 +2881,8 @@ function insert_teacher(&$db, $teacher_array) {
 			$lesson_id = $teacher_array["lesson_id"];
 			$del_flag = $teacher_array["del_flag"];
 			$mail_address = $teacher_array["mail_address"];
-			$password = openssl_encrypt($teacher_array["password"], 'AES-128-ECB', PASSWORD_KEY);
+			if ($teacher_array["password"])
+				$password = openssl_encrypt($teacher_array["password"], 'AES-128-ECB', PASSWORD_KEY);
 			$initial_password = $teacher_array["initial_password"];
 			$transport_cost = $teacher_array["transport_cost"];
 			$transport_DOW = $teacher_array["transport_DOW"];
@@ -3158,31 +3200,33 @@ function check_furikomisha($db, &$errArray, $furikomisha) {
  		array_push($errArray, "入力された振込者名はすでに登録されています。");
 	}
 	
-	$array = explode(':',$furikomisha["member_no"]); $array1 = array();
-	foreach ( $array as $item ) {
-		try{
-			$stmt = $db->prepare("SELECT member_no FROM tbl_furikomisha WHERE member_no like '%".$item."%'");
-			$stmt->execute();
-			$furikomisha_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		}catch (PDOException $e){
-			$errFlag = 1;
-			array_push($errArray, $e->getMessage()); break;
+	if ($furikomisha["member_no"]) {
+		$array = explode(':',$furikomisha["member_no"]); $array1 = array();
+		foreach ( $array as $item ) {
+			try{
+				$stmt = $db->prepare("SELECT member_no FROM tbl_furikomisha WHERE member_no like '%".$item."%'");
+				$stmt->execute();
+				$furikomisha_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			}catch (PDOException $e){
+				$errFlag = 1;
+				array_push($errArray, $e->getMessage()); break;
+			}
+			foreach ($furikomisha_array as $key => $item) { 
+				$array1 = array_unique ( array_merge ( explode(':',$item["member_no"]), $array1 ));
+			}
 		}
-		foreach ($furikomisha_array as $key => $item) { 
-			$array1 = array_unique ( array_merge ( explode(':',$item["member_no"]), $array1 ));
+		$array1 = array_diff( $array1, $array );
+		foreach ($array1 as $item) {
+			try{
+				$stmt = $db->prepare("SELECT name FROM tbl_member WHERE no='".$item."'");
+				$stmt->execute();
+				$array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			}catch (PDOException $e){
+				$errFlag = 1;
+				array_push($errArray, $e->getMessage()); break;
+			}
+			array_push($errArray, "生徒:".$array[0]['name']."を追加指定してください。");
 		}
-	}
-	$array1 = array_diff( $array1, $array );
-	foreach ($array1 as $item) {
-		try{
-			$stmt = $db->prepare("SELECT name FROM tbl_member WHERE no='".$item."'");
-			$stmt->execute();
-			$array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		}catch (PDOException $e){
-			$errFlag = 1;
-			array_push($errArray, $e->getMessage()); break;
-		}
-		array_push($errArray, "生徒:".$array[0]['name']."を追加指定してください。");
 	}
 	
 	if ($errFlag == 0) {
@@ -3437,7 +3481,8 @@ function insert_staff(&$db, $staff_array) {
 			$furigana = $staff_array["furigana"];
 			$del_flag = $staff_array["del_flag"];
 			$mail_address = $staff_array["mail_address"];
-			$password = openssl_encrypt($staff_array["password"], 'AES-128-ECB', PASSWORD_KEY);
+			if ($staff_array["password"])
+				$password = openssl_encrypt($staff_array["password"], 'AES-128-ECB', PASSWORD_KEY);
 			$initial_password = $staff_array["initial_password"];
 			$transport_cost = $staff_array['transport_cost'];
 			$transport_DOW = $staff_array['transport_DOW'];
@@ -3737,8 +3782,10 @@ function get_season_fee_type($db, $member_no) {
 		return 0;
 	else if ($join_month < '2019/11')
 		return 1;
-	else
+	else if ($join_month < '2020/02')
 		return 2;
+	else
+		return 3;
 }
 
 function get_grade($db, $member, $year, $month, $april_start) {
@@ -3824,6 +3871,8 @@ function get_default_fee($db, $member, $year, $month, $lesson_id, $course_id) {
 		if (!$lesson_length) return "授業時間不確定";
 		$ent_month = get_student_join_month($db, $member_no);
 		$grade = get_grade($db, $member, $year, $month, ($ent_month>='2018/09'));
+		
+		if ($lesson_id==2 && $course_id==2 && $lesson_length==40)	$lesson_length=60;
 
 //echo "$member_no, $lesson_id, $course_id, $ent_month, $grade, $lesson_count, $lesson_length.";
 

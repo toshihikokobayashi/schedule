@@ -107,9 +107,13 @@ function search_clear() {
 			<td><?= $key ?></td>
 			<td align="center">
 			<?php
-			$array = mb_split(':',$item['member_name']);
-			foreach( $array as $member_name) {
-					echo $member_name."<br>";
+			if ($item['member_name']) {
+				$array = mb_split(':',$item['member_name']);
+				foreach( $array as $member_name) {
+						echo $member_name."<br>";
+				}
+			} else {
+				echo "受講料振込対象外";
 			}
 			?>
 			</td>

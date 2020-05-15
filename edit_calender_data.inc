@@ -78,7 +78,7 @@ if ($result) {
 				"(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),now())";
 			$stmt = $db->prepare($sql);
 			$stmt->execute(array(
-				$event["event_id"], $staff_no, $staff_name, $year, $month, date("j", $start_timestamp), $start_timestamp, $end_timestamp, $diff_hours, 0, $absent_flag,
+				$event["event_id"], $staff_no, $staff_name, date("Y", $start_timestamp), date("n", $start_timestamp), date("j", $start_timestamp), $start_timestamp, $end_timestamp, $diff_hours, 0, $absent_flag,
 				$event["calender_id"], $event["calender_summary"], $event["event_summary"], $event["event_location"], $event["event_description"], $event['event_updated_timestamp']
 				));
 			

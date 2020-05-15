@@ -45,6 +45,25 @@ if ($err_flag == true) {
 	exit();
 }
 
+
+$y1=$year; $m1=$month-1; if ($m1<1) { $y1--; $m1=12; }
+
+$date_list = $date_list_array["$year/$month"];
+if (!$date_list)	$date_list = $date_list_array["$y1/$m1"];
+if (!$date_list)	$date_list = array();
+
+$season_class_date_list = $date_list;
+$date_list = array_merge($date_list, $sat_sun_class_date_list);
+$date_list = array_filter($date_list,function($d){global $year,$month; return (str_replace('/0','/',substr($d,0,7))=="$year/$month");});
+
+$date_list_string = "("; $flag=0;
+foreach ($date_list as $item) {
+	if ($flag==0) { $date_list_string .= "'$item'"; } else { $date_list_string .= ",'$item'"; }
+	$flag = 1;
+}
+$date_list_string = $date_list_string.")";
+
+
 //$db->beginTransaction();
 $result = check_current_session();
 $tid = '';
@@ -157,6 +176,45 @@ if ($err_flag == true) {
 休み回数一覧を表示する場合は、<a href="./absent_list.php?y=<?= $year ?>&m=<?= $month ?>">こちら</a>です。<br>
 -->
 
+<?php
+}else if (count($warning_Array) > 0) {
+?>
+	<h3>警告</h3>
+	<font color="red">以下の予定が季節講習・土日講習予定と重複しています。問題ないことを先生にご確認ください。</font><br>
+	問題なければ、<a href="./save_statement.php?y=<?= $year ?>&m=<?= $month ?>" target="_blank">こちら</a>から請求データ作成に進めます。<br><br>
+<a href="menu.php">メニューへ戻る</a><br><br>
+<table border="1">
+	<tr>
+		<th>カレンダー名</th><th>日にち</th><th>開始時間</th><th>終了時間</th><th>タイトル</th><th>警告</th>
+	</tr>
+<?php
+	echo count($warning_Array)."件";
+	foreach ($warning_Array as $error) {
+?>
+	<tr>
+		<td>
+			<?= $error["calender_summary"]?>
+		</td>
+		<td>
+			<?= $error["date"]?>
+		</td>
+		<td>
+			<?= $error["start_time"]?>
+		</td>
+		<td>
+			<?= $error["end_time"]?>
+		</td>
+		<td>
+			<?= $error["summary"]?>
+		</td>
+		<td>
+			<?= $error["message"]?>
+		</td>
+	</tr>
+<?php
+	}
+?>
+</table>
 <?php
 } else {
 ?>

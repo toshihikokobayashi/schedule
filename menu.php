@@ -93,9 +93,11 @@ function blankCheck() {
 				<font color="red" size="-1">* 処理結果が表示されるまでしばらくお待ちください</font>
 				</form>
 			<li><b>生徒の登録</b><br>
+<!--
 				<form method="post" action="student_fee_add.php">
 				<input type="submit" value="生徒の新規登録へ">
 				</form>
+-->
 				<form method="post" action="student_fee_list.php">
 				<input type="submit" value="登録済み生徒一覧へ"><br>
 				<b><font color="green" size="-1">「登録済み生徒一覧」から入会金やテキスト代やその他金額や授業料分割支払を<br>入力することができます</font></b>
@@ -111,15 +113,19 @@ function blankCheck() {
 				<input type="submit" value="登録済み振込者名一覧へ"><br>
 				</form>
 			<li><b>先生・事務員の登録</b><br>
+<!--
 				<form method="post" action="teacher_add.php">
 				<input type="submit" value="先生の新規登録へ">
 				</form>
+-->
 				<form method="post" action="teacher_list.php">
 				<input type="submit" value="登録済み先生一覧へ">
 				</form>
+<!--
 				<form method="post" action="staff_add.php">
 				<input type="submit" value="事務員の新規登録へ">
 				</form>
+-->
 				<form method="post" action="staff_list.php">
 				<input type="submit" value="登録済み事務員一覧へ"><br>
 				</form>

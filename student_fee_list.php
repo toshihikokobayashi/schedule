@@ -57,6 +57,12 @@ if ($tax_mode == '2') {
 	array_push($param_array, "tbl_member.tax_flag = '0'");
 }
 if ($lms_mode) {
+ob_start();
+echo date("----------- Y/m/d H:i:s \n")."<br>";
+var_dump( $_GET );echo"<br>";
+$tmpdata = ob_get_contents();
+ob_end_clean();
+file_put_contents('./log-20200511', $tmpdata, FILE_APPEND);
 	$student_id = str_pad($_GET['student_id'], 6, 0, STR_PAD_LEFT);
 	array_push($param_array," tbl_member.no = '$student_id' ");
 }
@@ -193,7 +199,9 @@ function dispZenseito(flag) {
 <?php if (!$lms_mode) { ?>
 <h3>生徒の登録 - 生徒一覧</h3>
 
+<!--
 <a href="student_fee_add.php">新規登録へ</a>&nbsp;&nbsp;
+-->
 <a href="check_cid.php">宛先登録チェックへ</a>&nbsp;&nbsp;
 <a href="menu.php">メニューへ戻る</a><br><br>
 <?php } ?>

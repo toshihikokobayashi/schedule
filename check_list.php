@@ -101,6 +101,22 @@ $year3 = $year;
 $month3 = $month-1;
 if ($month3<1) { $year3--; $month3=12; }
 
+if ($year>2020 || ($year==2020 && $month>=3)) {
+	foreach ($date_list_array as $dlist)	$date_list = array_merge($date_list,$dlist);
+	$date_list = array_unique(array_merge($date_list,$sat_sun_class_date_list));
+	$date_list1 = array();
+	$date_list_string = "("; $flag=0;
+	foreach ($date_list as $item) {
+		if (str_replace('/0','/',substr($item,0,7)) != "$year/$month") { continue; }
+		$date_list1[] = $item;
+		if ($flag==0) { $date_list_string .= "'$item'"; } else { $date_list_string .= ",'$item'"; }
+		$flag = 1;
+	}
+	$date_list = $date_list1;
+	$date_list_string = $date_list_string.")";
+	
+} else {
+	
 if ($month!=1 && $month!=4 && $month!=8) {
 	$date_list = $sat_sun_class_date_list;
 	$date_list1 = array();
@@ -129,6 +145,7 @@ if ($month!=1 && $month!=4 && $month!=8) {
 	}
 	$date_list = $date_list1;
 	$date_list_string = $date_list_string.")";
+}
 }
 
 // 先生一覧を取得
@@ -257,6 +274,7 @@ $tmp_teacher = array();
 	
 	if ($statement["course_id"] == "4" || $statement["course_id"] == "5" || $statement["course_id"] == "6") { continue; }
 	if (is_null($statement["course_id"])) continue;
+	if ($statement["course_id"] == 0) continue;
 
 	$teacher_id = $statement["teacher_id"];
 /*

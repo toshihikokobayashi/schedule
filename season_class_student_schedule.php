@@ -135,6 +135,8 @@ try {
 		$stmt->execute(array($member_no));
 		$rslt = $stmt->fetch(PDO::FETCH_NUM);
 		if ($rslt[0] && $rslt[0]!=0 && $rslt[0] < $lesson_fee0) { $lesson_fee0 = $rslt[0]; }
+
+		if ($member_list[$member_no]['fee_free']) { $lesson_fee0 = 0; }
 				
 		// スケジュール読み込み
 		$sql = "SELECT * FROM tbl_season_schedule WHERE date IN $date_list_string AND member_no=?";
@@ -172,7 +174,9 @@ try {
 		else if	($date_count >= LESSON_DATE_COUNT_2)	{ $date_count_index=2; }
 		else if	($date_count >= LESSON_DATE_COUNT_1)	{ $date_count_index=1; }
 		else																					{ $date_count_index=0; }
-		$exercise_fee = $exercise_fee_table[$season_fee_type][$member['season_course_id'][0]][$date_count_index];		
+		$exercise_fee = $exercise_fee_table[$season_fee_type][$member['season_course_id'][0]][$date_count_index];
+		
+		if ($member_list[$member_no]['fee_free']) { $exercise_fee = 0; }
 		
 		$total_fee += $exercise_fee * $exercise_length_total;
 		$cons_tax = floor($total_fee0*CONS_TAX08 + $total_fee1*CONS_TAX10 + $exercise_fee*$exercise_length_total0*CONS_TAX08 + $exercise_fee*$exercise_length_total1*CONS_TAX10);

@@ -30,7 +30,7 @@ if ($_POST['mode'] == 'transport') {
 	exit;
 }
 
-if ($_POST["no"]) {
+if ($_POST["no"] && $_POST['mode'] == 'attendance') {
 		$_SESSION['ulogin'] = array('teacher_id' => $_POST["no"]);
 		session_write_close();
 		header('location: ../../sakura-teacher/check_work_time.php?y='.$year.'&m='.$month);
@@ -64,6 +64,18 @@ $order_array = array("tbl_teacher.furigana asc");
 
 try {
 	
+	if ($_POST['tr_unapply'] && $_POST['no']) {
+		$db->beginTransaction();
+		$db->query("UPDATE tbl_transport_status SET status=0, update_timestamp=now() WHERE year='$year' AND month='$month' AND teacher_id='{$_POST['no']}'");
+		$db->commit();
+//echo "UPDATE tbl_transport_status SET status=0, update_timestamp=now() WHERE year='$year' AND month='$month' AND teacher_id='{$_POST['no']}'";
+	} else if ($_POST['tr_unfix'] && $_POST['no']) {
+		$db->beginTransaction();
+		$db->query("UPDATE tbl_transport_status SET status=1, update_timestamp=now() WHERE year='$year' AND month='$month' AND teacher_id='{$_POST['no']}'");
+		$db->commit();
+//echo "UPDATE tbl_transport_status SET status=1, update_timestamp=now() WHERE year='$year' AND month='$month' AND teacher_id='{$_POST['no']}'";
+	}
+
 	if ($_POST['fixed']=='確定') {
 		$db->beginTransaction();
 		$db->query("INSERT INTO tbl_fixed (year, month, fixed, insert_timestamp) VALUES (\"$year\", \"$month\", 1, now())");
@@ -99,9 +111,11 @@ function search_clear() {
 	document.forms["teacher_list"].submit();
 }
 function attendance_record(no) {
+	document.forms["teacher_list"].elements["mode"].value = "attendance";
 	document.forms["teacher_list"].elements["no"].value = no;
 	document.forms["teacher_list"].target = "_blank";
 	document.forms["teacher_list"].submit();
+	document.forms["teacher_list"].elements["mode"].value = '';
 	document.forms["teacher_list"].elements["no"].value = '';
 	document.forms["teacher_list"].target = "_self";
 }
@@ -117,6 +131,20 @@ function pay_display() {
 		pay[i].style.display = (pay_display_flag)? "":"none";
 	}
 	pay_display_flag = 1-pay_display_flag;
+	return false;
+}
+function tr_unapply_check(no) {
+	if (window.confirm("交通費未申請に戻します。よろしいですか？")) {
+		document.forms['teacher_list'].elements['no'].value=no;
+		return true;
+	}
+	return false;
+}
+function tr_unfix_check(no) {
+	if (window.confirm("交通費確定を解除します。よろしいですか？")) {
+		document.forms['teacher_list'].elements['no'].value=no;
+		return true;
+	}
 	return false;
 }
 </script>
@@ -182,7 +210,7 @@ function pay_display() {
 <br>
 <table border="1">
 <tr>
-<th>講師名</th><th></th><th>出欠確認</th><th colspan="2">交通費</th>
+<th>講師名</th><th></th><th>出欠確認</th><th colspan="3">交通費</th>
 </tr>
 <?php
 try {
@@ -235,6 +263,12 @@ try {
 		$transport_status_index = $transport_status[$item['no']];
 		if (!$transport_status_index) $transport_status_index = 0;
 		echo "<td>{$transport_status_str[$transport_status_index]}</td>";
+		if ($transport_status[$item['no']] == 1)
+			echo "<td><input type=\"submit\" name=\"tr_unapply\" value=\"申請解除\" onclick=\"return tr_unapply_check({$item['no']});\"></td>";
+		else if ($transport_status[$item['no']] == 2)
+			echo "<td><input type=\"submit\" name=\"tr_unfix\" value=\"確定解除\" onclick=\"return tr_unfix_check({$item['no']});\"></td>";
+		else
+			echo "<td></td>";
 		echo "</tr>";
 	}
 	echo "</table>";
