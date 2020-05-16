@@ -18,7 +18,7 @@ $errArray = array();
 
 $teacher = array();
 if ($teacher_acount) {
-	$month = str_pad($month, 2, 0, STR_PAD_LEFT);
+	$month0 = str_pad($month, 2, 0, STR_PAD_LEFT);
 	$teacher_id = $_SESSION['ulogin']['teacher_id'];
 } else {
 	$teacher_id = trim($_POST["no"]);
@@ -159,7 +159,7 @@ if ($action == 'add') {
 			}
 			
 			if ($teacher_acount) {
-				$sql = "DELETE FROM tbl_transport_cost WHERE teacher_id=\"{$teacher_id}\" AND DATE_FORMAT(date,'%Y%m')=\"$year$month\"";
+				$sql = "DELETE FROM tbl_transport_cost WHERE teacher_id=\"{$teacher_id}\" AND DATE_FORMAT(date,'%Y%m')=\"$year$month0\"";
 				$db->query($sql);
 				$sql = "INSERT tbl_transport_cost (teacher_id, date, cost, correct_cost, comment, insert_timestamp, update_timestamp) ".
 								"VALUES (?, ?, ?, ?, ?, now(), now())";
@@ -263,7 +263,7 @@ if ($action == 'add') {
 			$wage_other_array = array_column($wage_other_array, '0');
 			
 			if ($teacher_acount) {
-				$cmd = "SELECT * FROM tbl_transport_cost WHERE teacher_id=\"{$teacher_id}\" AND DATE_FORMAT(date,'%Y%m')=\"$year$month\"";
+				$cmd = "SELECT * FROM tbl_transport_cost WHERE teacher_id=\"{$teacher_id}\" AND DATE_FORMAT(date,'%Y%m')=\"$year$month0\"";
 				$stmt = $db->query($cmd);
 				$rslt = $stmt->fetchAll(PDO::FETCH_ASSOC);
 				foreach ($rslt as $item) {
@@ -426,6 +426,51 @@ function transport_zero_set(onoff) {
 	form.elements['transport_limit'].value = 0;
 	form.elements['transport_limit'].disabled = onoff;
 }
+function keyup0(val) {
+	var elems = document.getElementsByName('trnsd0[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = val;
+}
+function keyup1(val) {
+	var elems = document.getElementsByName('trnsd1[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = val;
+}
+function keyup2(val) {
+	var elems = document.getElementsByName('trnsd2[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = val;
+}
+function keyup3(val) {
+	var elems = document.getElementsByName('trnsd3[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = val;
+}
+function keyup4(val) {
+	var elems = document.getElementsByName('trnsd4[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = val;
+}
+function keyup5(val) {
+	var elems = document.getElementsByName('trnsd5[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = val;
+}
+function keyup6(val) {
+	var elems = document.getElementsByName('trnsd6[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = val;
+}
+function tr_reset() {
+	var elems0 = document.getElementsByName('transport_dcost1[]');
+	var elems = document.getElementsByName('trnsd0[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = elems0[0].value;
+	elems = document.getElementsByName('trnsd1[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = elems0[1].value;
+	elems = document.getElementsByName('trnsd2[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = elems0[2].value;
+	elems = document.getElementsByName('trnsd3[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = elems0[3].value;
+	elems = document.getElementsByName('trnsd4[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = elems0[4].value;
+	elems = document.getElementsByName('trnsd5[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = elems0[5].value;
+	elems = document.getElementsByName('trnsd6[]');
+	for (var i=0;i<elems.length;i++)	elems[i].innerHTML = elems0[6].value;
+}
 //-->
 </script>
 <link rel="stylesheet" type="text/css" href="./script/style.css">
@@ -449,7 +494,6 @@ function transport_zero_set(onoff) {
 <h3>先生の登録 - 更新・削除</h3>
 
 <a href="teacher_list.php">先生一覧へ</a>&nbsp;&nbsp;
-<a href="teacher_add.php">新規登録へ</a>&nbsp;&nbsp;
 <a href="menu.php">メニューへ戻る</a><br><br>
 
 <?php }} else if ($teacher_acount == 1) { ?>
@@ -487,7 +531,7 @@ function transport_zero_set(onoff) {
 ?>
 
 
-<form method="post" name="teacher_form" action="teacher_edit.php">
+<form method="post" name="teacher_form" action="teacher_edit.php" onreset="setTimeout(tr_reset,1)">
 	<input type="hidden" name="y" value="<?=$year?>">
 	<input type="hidden" name="m" value="<?=$month?>">
 	<input type="hidden" name="no" value="<?=$teacher_id?>">
@@ -520,7 +564,7 @@ function transport_zero_set(onoff) {
 		</font>
 	</div>
 <?php
-if (($teacher_acount == 1 && $transport_status !=0) || ($teacher_acount == 2 && $transport_status !=1)) { 
+if (($teacher_acount == 1 && $transport_status !=0) || ($teacher_acount == 2 && $transport_status ==2)) { 
 	echo $transport_status_str[$transport_status];
 } else {
 	if ($teacher_acount == 1)
@@ -546,56 +590,34 @@ if (($teacher_acount == 1 && $transport_status !=0) || ($teacher_acount == 2 && 
 	<tr>
 		<th>名前</th>
 		<td>
-			<input type="hidden" name="name" value="<?=$teacher["name"]?>">
-			<?=$teacher["name"]?>
+			<input type="hidden" name="name" value="<?=$teacher["name"]?>"><?=$teacher["name"]?>
 		</td>
 	</tr>
 	<tr <?=$lms_display?><?=$teacher_display?>>
-		<th><font color="red">*</font>&nbsp;ふりがな</th>
+		<th>ふりがな</th>
 		<td>
-			<input type="text" name="furigana" size="35" value="<?=$teacher["furigana"]?>">
-			<font color="red" size="-1">名字と名前の間に半角スペースを入れてください</font>
+			<input type="hidden" name="furigana" value="<?=$teacher["furigana"]?>"><?=$teacher["furigana"]?>
 		</td>
 	</tr>
 	<tr <?=$teacher_display?>>
 	<th>教室１</th><td>
-		<select name="lesson_id" onchange="change_lesson1(this)">
-		<option value="0"></option>
-<?php
-	foreach ($lesson_list as $key => $name) {
-?>
-		<option value="<?=$key?>"<?php if ($teacher["lesson_id"] == $key) { echo "selected"; } ?>><?php if ($key==0) { echo ""; } else { echo $name; } ?></option>
-<?php
-	}
-?>
-		</select>
+		<input type="hidden" name="lesson_id" value="<?=$teacher["lesson_id"]?>"><?=$lesson_list[$teacher["lesson_id"]]?>
 	</td>
 	</tr>
 	<tr <?=$teacher_display?>>
 	<th>教室２</th><td>
-		<select name="lesson_id2" onchange="change_lesson2(this)">
-		<option value="0"></option>
-<?php
-	foreach ($lesson_list as $key => $name) {
-?>
-		<option value="<?=$key?>"<?php if ($teacher["lesson_id2"] == $key) { echo "selected"; } ?>><?php if ($key==0) { echo ""; } else { echo $name; } ?></option>
-<?php
-	}
-?>
-		</select>
+		<input type="hidden" name="lesson_id2" value="<?=$teacher["lesson_id2"]?>"><?=$lesson_list[$teacher["lesson_id2"]]?>
 	</td>
 	</tr>
 	<tr <?=$lms_display?><?=$teacher_display?>>
 	<th>ステータス</th><td>
-		<select name="del_flag">
-		<option value="0" <?php if ($teacher["del_flag"] == 0) { echo "selected"; } ?>>現先生</option>
-		<option value="2" <?php if ($teacher["del_flag"] == 2) { echo "selected"; } ?>>前先生</option>
-		</select>
+		<input type="hidden" name="del_flag" value="<?=$teacher["del_flag"]?>">
+		<?= ($teacher["del_flag"] == 0)?'現先生':'' ?><?= ($teacher["del_flag"] == 2)?'前先生':'' ?>
 	</td>
 	</tr>
 	<tr <?=$lms_display?><?=$teacher_display?>>
 	<th>メールアドレス</th><td>
-		<input type="text" name="mail_address" size="80" maxlength="100" value="<?=$teacher["mail_address"]?>">
+		<input type="hidden" name="mail_address" value="<?=$teacher["mail_address"]?>"><?=$teacher["mail_address"]?>
 	</td>
 	</tr>
 	<tr valign="top" <?=$teacher_display?>>
@@ -755,15 +777,16 @@ foreach($work_type_list as $key=>$work_type) {
 <td>定期代１月分</td>
 <td colspan="8"><input type="text" name="transport_mcost" size="10" value="<?= $teacher['transport_mcost'] ?>">円 （半角数字入力）</td>
 </tr>
-<tr align="center"><td align="left" rowspan="2">曜日別交通費<br>１日分</td><td>日</td><td>月</td><td>火</td><td>水</td><td>木</td><td>金</td><td>土</td></tr>
+<tr align="center"><td align="left" rowspan="2">曜日別交通費<br>１日分 <?= ($teacher_acount)?'(*1)':'' ?></td>
+<td>日</td><td>月</td><td>火</td><td>水</td><td>木</td><td>金</td><td>土</td></tr>
 <tr>
-<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][0] ?>"></td>
-<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][1] ?>"></td>
-<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][2] ?>"></td>
-<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][3] ?>"></td>
-<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][4] ?>"></td>
-<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][5] ?>"></td>
-<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][6] ?>"></td>
+<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][0] ?>" onkeyup="keyup0(this.value);"></td>
+<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][1] ?>" onkeyup="keyup1(this.value);"></td>
+<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][2] ?>" onkeyup="keyup2(this.value);"></td>
+<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][3] ?>" onkeyup="keyup3(this.value);"></td>
+<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][4] ?>" onkeyup="keyup4(this.value);"></td>
+<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][5] ?>" onkeyup="keyup5(this.value);"></td>
+<td><input type="text" name="transport_dcost1[]" size="8" value="<?= $teacher['transport_dcost1'][6] ?>" onkeyup="keyup6(this.value);"></td>
 </tr>
 <tr>
 <td>支給額制限</td>
@@ -775,6 +798,9 @@ if ($teacher['transport_limit']) echo '給与の1割まで';
 <?php } ?>
 </tr>
 </table>
+<?php if ($teacher_acount) { ?>
+<font color="red">*1　曜日別交通費の入力は以下の日別交通費表に即時反映されます。</font><br>
+<?php } ?>
 <br>
 
 <table border="1" <?=$teacher_display?>>
@@ -842,7 +868,6 @@ if ($teacher['transport_limit']) echo '給与の1割まで';
 <?php 
 }
 
-$month = $month+0;
 if ($teacher_acount == 1) {
 	require_once("./check_work_time.php");
 } else if ($teacher_acount == 2) {

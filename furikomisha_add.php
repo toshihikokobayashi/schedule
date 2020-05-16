@@ -46,11 +46,16 @@ if ($action == 'add') {
 		$sep = ':';
 	}
 
-	// 入力チェック処理
-	try{
-		$result = check_furikomisha($db, $errArray, $furikomisha);
-	}catch (PDOException $e){
-		array_push($errArray, $e->getMessage());
+	if ($_POST['exclude_flag']) {
+		$furikomisha["member_no"] = '';
+		$furikomisha["member_name"] = '';
+	} else {
+		// 入力チェック処理
+		try{
+			$result = check_furikomisha($db, $errArray, $furikomisha);
+		}catch (PDOException $e){
+			array_push($errArray, $e->getMessage());
+		}
 	}
 
 	if (count($errArray) == 0) {
@@ -159,7 +164,11 @@ function member_click( member_no, checked ) {
 	</td>
 	</tr>
 	<tr>
-	<th><font color="red">*</font>&nbsp;振込生徒名</th>
+	<th>受講料振込対象外</th>
+	<td><input type="checkbox" name="exclude_flag"></td>
+	</tr>
+	<tr>
+	<th>振込生徒名</th>
 	<td>
 <table>
 <?php

@@ -11,7 +11,11 @@ set_time_limit(0);
 $errArray = array();
 $errFlag = 0;
 
+$page = $_POST['page'];
+$start_no = substr($page,0,strpos($page,'～'));
 $student_id = $_POST['no'];
+
+$page_length = 100;
 
 try {
 
@@ -75,8 +79,13 @@ $member_list = get_simple_member_list($db, $param_array, $value_array, $order_ar
 <th>塾</th><th>英会話</th><th>ピアノ</th><th>習い事</th><th>入会金</th><th>月会費</th><th>督促金</th>
 </tr>
 <?php
-foreach ($member_list as $member_no => $member) {
 
+$mem_no = 0;
+$limit_count = $page_length;
+foreach ($member_list as $member_no => $member) {
+	$mem_no++;
+	if ($mem_no < $start_no)	continue;
+	if (!($limit_count--))	break;
 //$log_member_no = $member_no;
 	
 	$last_total_price = 0;
@@ -101,7 +110,6 @@ foreach ($member_list as $member_no => $member) {
   	$price_list['textbook_price'][$lesson_id] = 0;
 	}
 
-	$row_no++;
 	$join_month = get_student_join_month($db, $member_no);
 	
 	if ($member['del_flag']==2) {
@@ -130,7 +138,7 @@ foreach ($member_list as $member_no => $member) {
 		$stmt->execute();
 		$statement_array = $stmt->fetchAll(PDO::FETCH_BOTH);
 
-if ($row_no>0) {
+if ($mem_no>0) {
 		foreach ($statement_array as $statement) {
 			$statement_no = $statement["statement_no"];
 			$statement_list[$statement_no] = $statement;
@@ -454,7 +462,7 @@ if ($member_no == $log_member_no)	echo "text {$buying["price"]}<BR>";
 	$diff_grand_total -= $price_list['tokusoku'];
 ?>
 	<tr>
-		<td><?= $row_no ?></td>
+		<td><?= $mem_no ?></td>
 		<td align="left"><?= $member["name"] ?></td>
 		<td align="left"><?= $join_month ?></td>
 		<td align="left"><?= $leave_month ?></td>
@@ -476,8 +484,30 @@ if ($member_no == $log_member_no)	echo "text {$buying["price"]}<BR>";
 	var_dump($e);echo"<br>";echo"<br>";
 }
 
+function cmp_hours($a, $b) {
+      if ($a["hours"] == $b["hours"]) {
+		    return 0;
+      }
+      return ($a["hours"] > $b["hours"]) ? +1 : -1;
+}
+
 ?>
 </table>
+<br><br>
+<form method="post" action="./student_total_fees.php">
+<?php
+	$member_count = count($member_list);
+	$page_no = ceil($member_count/$page_length);
+	if ($page_no)
+		for ($i=0;$i<$page_no;$i++) {
+			if ($page_length*($i+1) < $member_count)
+				$str = ($page_length*$i+1)."～".($page_length*($i+1));
+			else
+				$str = ($page_length*$i+1)."～".($member_count);
+			echo "<input type=\"submit\" name=\"page\" value=\"$str\">";
+		}
+?>
+</form>
 </div>
 </body></html>
 

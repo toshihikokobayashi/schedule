@@ -3200,31 +3200,33 @@ function check_furikomisha($db, &$errArray, $furikomisha) {
  		array_push($errArray, "入力された振込者名はすでに登録されています。");
 	}
 	
-	$array = explode(':',$furikomisha["member_no"]); $array1 = array();
-	foreach ( $array as $item ) {
-		try{
-			$stmt = $db->prepare("SELECT member_no FROM tbl_furikomisha WHERE member_no like '%".$item."%'");
-			$stmt->execute();
-			$furikomisha_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		}catch (PDOException $e){
-			$errFlag = 1;
-			array_push($errArray, $e->getMessage()); break;
+	if ($furikomisha["member_no"]) {
+		$array = explode(':',$furikomisha["member_no"]); $array1 = array();
+		foreach ( $array as $item ) {
+			try{
+				$stmt = $db->prepare("SELECT member_no FROM tbl_furikomisha WHERE member_no like '%".$item."%'");
+				$stmt->execute();
+				$furikomisha_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			}catch (PDOException $e){
+				$errFlag = 1;
+				array_push($errArray, $e->getMessage()); break;
+			}
+			foreach ($furikomisha_array as $key => $item) { 
+				$array1 = array_unique ( array_merge ( explode(':',$item["member_no"]), $array1 ));
+			}
 		}
-		foreach ($furikomisha_array as $key => $item) { 
-			$array1 = array_unique ( array_merge ( explode(':',$item["member_no"]), $array1 ));
+		$array1 = array_diff( $array1, $array );
+		foreach ($array1 as $item) {
+			try{
+				$stmt = $db->prepare("SELECT name FROM tbl_member WHERE no='".$item."'");
+				$stmt->execute();
+				$array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			}catch (PDOException $e){
+				$errFlag = 1;
+				array_push($errArray, $e->getMessage()); break;
+			}
+			array_push($errArray, "生徒:".$array[0]['name']."を追加指定してください。");
 		}
-	}
-	$array1 = array_diff( $array1, $array );
-	foreach ($array1 as $item) {
-		try{
-			$stmt = $db->prepare("SELECT name FROM tbl_member WHERE no='".$item."'");
-			$stmt->execute();
-			$array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		}catch (PDOException $e){
-			$errFlag = 1;
-			array_push($errArray, $e->getMessage()); break;
-		}
-		array_push($errArray, "生徒:".$array[0]['name']."を追加指定してください。");
 	}
 	
 	if ($errFlag == 0) {

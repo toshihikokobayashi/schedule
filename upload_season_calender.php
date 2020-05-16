@@ -121,7 +121,6 @@ if ($already_exist > 0) {			// Already exsit target year month data.
 	// 1st cycle. Check season_class schedule on tbl_schedule_onetime that is not confired yet. 
 	// if there is, logical delete the data.
 	$sql = "SELECT id FROM tbl_schedule_onetime ";
-
 	$sql .= " WHERE delflag=0 AND confirm!='f' AND (work_id=? OR work_id=? OR work_id=?) AND ymd BETWEEN ? AND ? ORDER BY id";
 
 	$stmt = $dbh->prepare($sql);

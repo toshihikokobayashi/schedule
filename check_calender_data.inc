@@ -326,14 +326,15 @@ if ($result) {
 						}
 					}
 					
+					if (!$event["absent_flag"])
 					foreach ($season_schedules as $season_schedule) {
 						if ($season_schedule['teacher_no']!=$event['teacher_id'])	continue;
 						$stimestamp = DateTime::createFromFormat('Y/m/d H:i', "{$season_schedule['date']} {$season_schedule['stime']}")->getTimestamp();
 						$etimestamp = DateTime::createFromFormat('Y/m/d H:i', "{$season_schedule['date']} {$season_schedule['etime']}")->getTimestamp();
 						if (($event['start_timestamp']<=$stimestamp && $stimestamp<$event['end_timestamp']) ||
 								($event['start_timestamp']> $stimestamp && $etimestamp>$event['start_timestamp'])) {
-	 							$error_event["message"] = "季節講習・土日講習重複エラー";
-								$errArray[] = $error_event;
+	 							$error_event["message"] = "季節講習・土日講習と重複しています";
+								$warning_Array[] = $error_event;
 								}
 					}
 					
@@ -524,7 +525,8 @@ if ($result) {
 								if ($event["monthly_fee_flag"]) {
 									$result = add_m_fee($db, $event["member_no"], $event["lesson_id"], $event["subject_id"], $event["course_id"]);
 								} else {
-									$result = add_fee($db, $member_list0[$event["member_no"]], $event["lesson_id"], $event["subject_id"], $event["course_id"], $event["teacher_id"], $year, $month);
+									if ($event["teacher_id"])
+										$result = add_fee($db, $member_list0[$event["member_no"]], $event["lesson_id"], $event["subject_id"], $event["course_id"], $event["teacher_id"], $year, $month);
 								}
 								if ($result) {
 /* 授業料0円チェックは清算時に行う

@@ -285,8 +285,10 @@ try {
 			$etime1 = $etime;
 			$stmt->execute( array($date,$stime,$etime,$lnum,$tid,$mid,$lesson_id,$subject_id,
 														$date,$stime,$etime,$lnum,$tid,$mid,$lesson_id,$subject_id));
+			$insertLMS_array[] = array($date,$stime,$etime,$lnum,$tid,$mid,$lesson_id,$subject_id);
 		}
 		$db->commit();
+//		insertLMS($insertLMS_array);
 	}
 	
 	if ($exec == '選択コマ削除') {
@@ -300,7 +302,9 @@ try {
 			$tid   = $matches[2];
 			$mid   = $matches[3];
 			$stmt->execute(array($date,$stime,$tid,$mid));
+			$deleteLMS_array[] = array($date,$stime,$etime,$lnum,$tid,$mid,$lesson_id,$subject_id);
 		}
+//		deleteLMS($deleteLMS_array);
 		$db->commit();
 	}
 
@@ -438,6 +442,7 @@ try {
 										$stmt1->execute(array($date,$stime,$etime,$i,$teacher_id,$mem,$schedule['lesson_id'],$schedule['subject_id'],
 																					$date,$stime,$etime,$i,$teacher_id,$mem,$schedule['lesson_id'],$schedule['subject_id']));
 										$schedule['auto'] = 0;
+										$insertLMS_array[] = array($date,$stime,$etime,$i,$teacher_id,$mem,$schedule['lesson_id'],$schedule['subject_id']);
 									}
 									foreach ($time_list as $time1){
 										if ($stime<=$time1 && $time1<$etime) { $schedules[$date][$time1][$i] = $schedule; }
@@ -520,6 +525,7 @@ try {
 										$stmt1->execute(array($date,$stime,$etime,$i,$teacher_id,$mem,$schedule['lesson_id'],$schedule['subject_id'],
 																					$date,$stime,$etime,$i,$teacher_id,$mem,$schedule['lesson_id'],$schedule['subject_id']));
 										$schedule['auto'] = 0;
+										$insertLMS_array[] = array($date,$stime,$etime,$i,$teacher_id,$mem,$schedule['lesson_id'],$schedule['subject_id']);
 									}
 									foreach ($time_list as $time1){
 										if ($stime<=$time1 && $time1<$etime) { $schedules[$date][$time1][$i] = $schedule; }
@@ -545,6 +551,7 @@ try {
 		}
 
 		if ($exec == '保存' && $auto_flag) {
+//			insertLMS($insertLMS_array);
 			$db->commit();
 		}
 	}
@@ -567,6 +574,62 @@ if ($class_type == 'sat_sun_class') {
 	$page_title = $season_class_title."　スケジュール";
 }
 }
+
+function insertLMS($array) {
+	foreach ($array as $item) {
+		$date=$item[0]; $stime=$item[1]; $etime=$item[2]; $lnum=$item[3]; $tid=$item[4]; $mid=$item[5]; $lesson_id=$item[6]; $subject_id=$item[7];
+		$oldid = $LMSlid[$date][$stime][$tid];
+		if ($oldid) {
+			deleteLMS1($oldid);
+		}
+		$LMSlid[$date][$stime][$tid] = $insertLMS1($date,$stime,$etime,$lnum,$tid,$mid,$lesson_id,$subject_id);
+	}
+}
+
+function deleteLMS($array) {
+	foreach ($array as $item) {
+		$date=$item[0]; $stime=$item[1]; $etime=$item[2]; $lnum=$item[3]; $tid=$item[4]; $mid=$item[5]; $lesson_id=$item[6]; $subject_id=$item[7];
+		$oldid = $LMSlid[$date][$stime][$tid];
+		if ($oldid) {
+			deleteLMS1($oldid);
+		}
+	}
+}
+
+// POST用関数
+function http_post ($url, $data)
+{
+  $data_url = http_build_query ($data);
+  $data_len = strlen ($data_url);
+ 
+	$content = file_get_contents (
+			$url,
+			false,
+			stream_context_create (
+				array ('http' =>
+						array (
+								'method'=>'POST',
+								'header'=>"Content-Type: application/x-www-form-urlencoded\r\nContent-Length: $data_len\r\n",
+								'content'=>$data_url)
+						)
+				)
+			);
+	preg_match('/HTTP\/1\.[0|1|x] ([0-9]{3})/', $http_response_header[0], $matches);
+	$statusCode = (int)$matches[1];
+	
+	if ($statusCode !== 200) return null;
+	return $content;
+}
+ 
+
+function insertLMS1($date,$stime,$etime,$lnum,$tid,$mid,$lesson_id,$subject_id) {
+	http_post1();
+}
+
+function deleteLMS1() {
+	http_post1();
+}
+
 ?>
 <body>
 

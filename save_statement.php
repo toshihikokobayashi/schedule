@@ -6,7 +6,6 @@ require_once("./const/login_func.inc");
 require_once("./calculate_fees.php");
 $result = check_user($db, "1");
 
-$entrance_fee_for_lesson = array( 1=>15000, 2=>15000, 3=>10000, 4=>10000 );
 $errArray = array();
 $errFlag = 0;
 
@@ -29,6 +28,12 @@ if (($year<'2019') || ($year=='2019' && $month<'10')) {
 	throw new Exception('2019年9月以前の請求更新は確定済みです。');
 } else {
 //	throw new Exception('現在2019年10月以降（消費税10％）を処理できません。');
+}
+
+if (($year<'2020') || ($year=='2020' && $month<='02')) {
+	$entrance_fee_for_lesson = array( 1=>15000, 2=>15000, 3=>10000, 4=>10000 );
+} else {
+	$entrance_fee_for_lesson = array( 1=>20000, 2=>15000, 3=>10000, 4=>10000 );			// 2020/02以降
 }
 
 $stmt = $db->query("SELECT fee_no FROM tbl_fee WHERE temp_flag=1 AND teacher_id!=0");
@@ -356,7 +361,7 @@ function insert_statement(&$db,$tmp_year,$tmp_month,$member_array,$index) {
 		$divided_payment_list = get_both_divided_payment_list($db, $param_array, $value_array, $order_array);
 		if (count($divided_payment_list)) {$toroku_flag = true;}
 
-		if ($toroku_flag == true) {
+		if ($toroku_flag == true || $member_array["last_total_price"] != 0) {
 
 			$stmt = $db->prepare("INSERT INTO tbl_statement_no (insert_timestamp, update_timestamp) VALUES (now(), now())");
 			$stmt->execute();

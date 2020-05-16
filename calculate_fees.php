@@ -60,8 +60,10 @@ class calculate_fees {
 
 	$year1 = $year; $month1 = $month-1; if ($month1<1) { $year1--; $month1=12; }
 	
-	if ($month!=1 && $month!=4 && $month!=8) {
-		$date_list = $sat_sun_class_date_list;
+	if ($year>2020 || ($year==2020 && $month>2)) {
+		$date_list = array();
+		foreach ($date_list_array as $dlist)	$date_list = array_merge($date_list, $dlist);
+		$date_list = array_unique(array_merge($date_list,$sat_sun_class_date_list));
 		$date_list_string = "("; $flag=0;
 		foreach ($date_list as $item) {
 			if (str_replace('/0','/',substr($item,0,7)) != "$year/$month") { continue; }
@@ -70,15 +72,27 @@ class calculate_fees {
 		}
 		$date_list_string = $date_list_string.")";
 	} else {
-		$date_list = $date_list_array["$year1/$month1"];
-		$date_list = array_unique(array_merge($date_list,$sat_sun_class_date_list));
-		$date_list_string = "("; $flag=0;
-		foreach ($date_list as $item) {
-			if (in_array($item, $sat_sun_class_date_list) && (str_replace('/0','/',substr($item,0,7)) != "$year/$month")) { continue; }
-			if ($flag==0) { $date_list_string .= "'$item'"; } else { $date_list_string .= ",'$item'"; }
-			$flag = 1;
+		if ($month!=1 && $month!=4 && $month!=8) {
+			$date_list = $sat_sun_class_date_list;
+			$date_list_string = "("; $flag=0;
+			foreach ($date_list as $item) {
+				if (str_replace('/0','/',substr($item,0,7)) != "$year/$month") { continue; }
+				if ($flag==0) { $date_list_string .= "'$item'"; } else { $date_list_string .= ",'$item'"; }
+				$flag = 1;
+			}
+			$date_list_string = $date_list_string.")";
+		} else {
+			$date_list = $date_list_array["$year1/$month1"];
+			if (!$date_list)	$date_list = array();
+			$date_list = array_unique(array_merge($date_list,$sat_sun_class_date_list));
+			$date_list_string = "("; $flag=0;
+			foreach ($date_list as $item) {
+				if (in_array($item, $sat_sun_class_date_list) && (str_replace('/0','/',substr($item,0,7)) != "$year/$month")) { continue; }
+				if ($flag==0) { $date_list_string .= "'$item'"; } else { $date_list_string .= ",'$item'"; }
+				$flag = 1;
+			}
+			$date_list_string = $date_list_string.")";
 		}
-		$date_list_string = $date_list_string.")";
 	}
 
 try{
@@ -156,6 +170,19 @@ try{
 				$stmt = $this->db->prepare($sql);
 				$stmt->execute(array($member_no));
 				$this->season_class_list2 = $stmt->fetchAll(PDO::FETCH_ASSOC);		
+/*
+				$sql = "SELECT a.date, a.stime, a.etime, a.teacher_no, a.lesson_id, a.subject_id, ".
+								"b.season_course_id, b.stime as student_stime, b.etime as student_etime, c.presence as attend_status, b.furikae_status, b.furikae_flag ".
+								"FROM tbl_season_schedule a JOIN tbl_season_class_entry_date b ".
+								"ON a.date IN $date_list_string AND a.member_no=? AND a.member_no=b.member_id AND a.date=b.date ".
+								"LEFT JOIN tbl_teacher_presence_report c ".
+								"ON c.member_no=a.member_no AND a.stime=SUBSTR(c.time,1,5) ".
+								"AND a.date=CONCAT(c.year,'/',lpad(c.month,2,'0'),'/',lpad(REPLACE(SUBSTR(c.date, POSITION('月' IN c.date)+1),'日',''),2,'0')) ".
+								"ORDER BY a.date ASC, a.stime ASC";
+				$stmt = $this->db->prepare($sql);
+				$stmt->execute(array($member_no));
+				$this->season_class_list2 = $stmt->fetchAll(PDO::FETCH_ASSOC);		
+*/
 			}
 //		}
 
@@ -480,7 +507,7 @@ try{
 
 	// 教室ごとに明細情報を取得するメソッド
 	private function calculate_lesson_detail(&$db, $member, $year, $month) {
-		global	$season_course_list,$date_list,$sat_sun_class_date_list,$date_list_string;
+		global	$season_course_id,$season_course_list,$date_list,$sat_sun_class_date_list,$date_list_string;
 		global $time_list,$default_stime,$default_etime,$lesson_fee_table,$exercise_fee_table;
 		$lesson_list 	= get_lesson_list($db);
 		$subject_list = get_subject_list($db);
@@ -649,6 +676,7 @@ try{
 						$lesson_fee0 = $lesson_fee_table[$season_fee_type][$grade][$item['season_course_id']][0];
 					$exercise_fee = $exercise_fee_table[$season_fee_type][$item['season_course_id']][$date_count_index];		
 					if ($lesson_fee1 && $lesson_fee1!=0 && $lesson_fee1 < $lesson_fee0) { $lesson_fee0 = $lesson_fee1; }
+					if ($member['fee_free']) { $lesson_fee0 = 0; $exercise_fee = 0; }
 					if ($item['date'] != $last_date) {
 						// 演習計算
 						$last_date = $item['date'];
@@ -684,6 +712,16 @@ try{
 							$event_item["alternative_flag"] = 0;
 						}
 						$event_item['sat_sun_flag'] = $sat_sun_flag;
+						if ($sat_sun_flag) {
+							$event_item['course_id']=null;
+						} else {
+							switch ($season_course_id) {
+							case 5: $event_item['course_id']=5; break;
+							case 6: $event_item['course_id']=6; break;
+							case 4: $event_item['course_id']=4; break;
+							default:$event_item['course_id']=''; break;
+							}
+						}
 						$exercise_index = array_push( $tmp_event_list, $event_item )-1;
 					}
 					$var_array1 = explode( '/',$item['date'] );
@@ -723,20 +761,19 @@ try{
 					}
 					
 					$event_item['sat_sun_flag'] = $sat_sun_flag;
-					
-					$tmp_event_list[$exercise_index]['diff_hours'] -= $event_item['diff_hours']	;
-					
 					if ($sat_sun_flag) {
 						$event_item['course_id']=null;
 					} else {
-						switch ($month) {
-						case 1: $event_item['course_id']=5; break;
-						case 4: $event_item['course_id']=6; break;
-						case 8: $event_item['course_id']=4; break;
+						switch ($season_course_id) {
+						case 5: $event_item['course_id']=5; break;
+						case 6: $event_item['course_id']=6; break;
+						case 4: $event_item['course_id']=4; break;
 						default:$event_item['course_id']=''; break;
 						}
 					}
 					
+					$tmp_event_list[$exercise_index]['diff_hours'] -= $event_item['diff_hours']	;
+										
 					array_push( $tmp_event_list, $event_item );
 				}
 			}
@@ -1155,7 +1192,7 @@ try{
 	}
 
 	private function get_fee($fee_list, $tmp_event) {
-		if ($tmp_event['fee']) {
+		if (isset($tmp_event['fee'])) {
 			// 一人グループ対応
 			if ($tmp_event["one_man_group"] && ($tmp_event["lesson_id"] == 1 || $tmp_event["lesson_id"] == 2) && $tmp_event["diff_hours"] == 0.67) {
 				return array(
