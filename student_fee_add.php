@@ -306,8 +306,8 @@ function add_check() {
 	<select name="birth_year" onchange="set_grade()">
 	<option value="0"></option>
 <?php
-	for ($i=date('Y');$i>1990;$i--) { echo "	<option value=\"$i\"".($i==$student["birth_year"]?' selected':'').">$i</option>"; }
-	echo "<option value=\"1990\"".($i==$student["birth_year"]?' selected':'').">1990以前</option>";
+	for ($i=date('Y');$i>1900;$i--) { echo "	<option value=\"$i\"".($i==$student["birth_year"]?' selected':'').">$i</option>"; }
+	echo "<option value=\"1900\"".($i==$student["birth_year"]?' selected':'').">1900</option>";
 ?>
 	</select>年
 	<select name="birth_month" onchange="set_grade()">

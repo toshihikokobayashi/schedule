@@ -244,7 +244,6 @@ function transport_zero_set(onoff) {
 <h3>事務員の登録 - 更新・削除</h3>
 
 <a href="staff_list.php">事務員一覧へ</a>&nbsp;&nbsp;
-<a href="staff_add.php">新規登録へ</a>&nbsp;&nbsp;
 <a href="menu.php">メニューへ戻る</a><br><br>
 
 <?php }} else if ($staff_acount == 1) { ?>
@@ -313,25 +312,22 @@ function transport_zero_set(onoff) {
 
 	<table id="form">
 	<tr>
-		<th>&nbsp;名前</th>
+		<th>名前</th>
 		<td>
 			<input type="hidden" name="name" value="<?=$staff["name"]?>">
 			<?=$staff['name']?>
 		</td>
 	</tr>
 	<tr <?=$lms_display?><?=$staff_display?>>
-		<th><font color="red">*</font>&nbsp;ふりがな</th>
+		<th>ふりがな</th>
 		<td>
-			<input type="text" name="furigana" size="35" value="<?=$staff["furigana"]?>">
-			<font color="red" size="-1">名字と名前の間に半角スペースを入れてください</font>
+			<input type="hidden" name="furigana" value="<?=$staff["furigana"]?>"><?=$staff["furigana"]?>
 		</td>
 	</tr>
 	<tr <?=$lms_display?><?=$staff_display?>>
 	<th>ステータス</th><td>
-		<select name="del_flag">
-		<option value="0" <?php if ($staff["del_flag"] == 0) { echo "selected"; } ?>>現事務員</option>
-		<option value="2" <?php if ($staff["del_flag"] == 2) { echo "selected"; } ?>>前事務員</option>
-		</select>
+		<input type="hidden" name="del_flag" value="<?=$staff["del_flag"]?>">
+		<?= ($staff["del_flag"] == 0)?'現事務員':'' ?><?= ($staff["del_flag"] == 2)?'前事務員':'' ?>
 	</td>
 	</tr>
 <!--
@@ -347,19 +343,13 @@ function transport_zero_set(onoff) {
 <td>講師登録画面で登録してください。</td>
 <?php } else { ?>
 	<td>
-		銀行番号<input type="text" name="bank_no" size="4" maxlength="4" value="<?=$staff["bank_no"]?>">
-		支店番号<input type="text" name="bank_branch_no" size="3" maxlength="3" value="<?=$staff["bank_branch_no"]?>">
-		預金種目
-		<select name="bank_acount_type">
-		<option value="1" <?php if ($staff["bank_acount_type"] == 1) { echo "selected"; } ?>>普通</option>
-		<option value="2" <?php if ($staff["bank_acount_type"] == 2) { echo "selected"; } ?>>当座</option>
-		<option value="4" <?php if ($staff["bank_acount_type"] == 4) { echo "selected"; } ?>>貯蓄</option>
-		</select>
+		銀行番号:<input type="hidden" name="bank_no" value="<?=$staff["bank_no"]?>"><?=$staff["bank_no"]?>　
+		支店番号:<input type="hidden" name="bank_branch_no" value="<?=$staff["bank_branch_no"]?>"><?=$staff["bank_branch_no"]?>　
+		預金種目:<?= ($staff["bank_acount_type"] == 1)?'普通':'' ?><?= ($staff["bank_acount_type"] == 2)?'当座':'' ?><?= ($staff["bank_acount_type"] == 4)?'貯蓄':'' ?>
+		<input type="hidden" name="bank_acount_type" value="<?=$staff["bank_acount_type"]?>">
 		<br>
-		口座番号<input type="text" name="bank_acount_no" size="7" maxlength="7" value="<?=$staff["bank_acount_no"]?>">
-		<font color="red" size="-1">（半角数字７ケタ、7ケタ未満の場合は前をゼロで埋めてください）</font><br>
-		口座名　<input type="text" name="bank_acount_name" size="60" maxlength="30" value="<?=$staff["bank_acount_name"]?>">
-		<font color="red" size="-1">（全角カナ　*1）</font>
+		口座番号:<input type="hidden" name="bank_acount_no" value="<?=$staff["bank_acount_no"]?>"><?=$staff["bank_acount_no"]?>　
+		口座名:<input type="hidden" name="bank_acount_name" value="<?=$staff["bank_acount_name"]?>"><?=$staff["bank_acount_name"]?>
 	</td>
 <?php } ?>
 	</tr>
@@ -472,28 +462,8 @@ function transport_zero_set(onoff) {
 </tr>
 <?php } ?>
 </table>
-
 <br <?=$staff_display?>>
-<table <?=$staff_display?>>
-<tr valign="top">
-<th>*1　口座名に使用できる文字 　　</th>
-<td>
-１２３４５６７８９０<br>
-ＡＢＣＤＥＦＧＨＩＪＫＬＭＮ<br>
-ＯＰＱＲＳＴＵＶＷＸＹＺ<br>
-アイウエオカキクケコ<br>
-サシスセソタチツテト<br>
-ナニヌネノハヒフヘホ<br>
-マミムメモヤユヨ<br>
-ラリルレロワン<br>
-ガギグゲゴザジズゼゾ<br>
-ダヂヅデドバビブベボ<br>
-パピプペポ<br>
-ヴ<br>
-（）．－<br>
-</td>
-</tr>
-</table>
+
 <?php if ($lms_mode) { ?>
 <br><input type="button" onclick="document.location='staff_list.php?staff_id=<?='2'.str_pad($staff_id, 5, 0, STR_PAD_LEFT)?>'" value="戻る">
 		<input type="button" onclick="window.close()" value="閉じる">

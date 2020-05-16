@@ -5,8 +5,10 @@ require_once("./func.inc");
 require_once("./const/login_func.inc");
 $result = check_user($db, "1");
 
-$year0 = date('Y',strtotime('-1 month'));
-$month0 = date('n',strtotime('-1 month'));
+//$year0 = date('Y',strtotime('-1 month'));
+//$month0 = date('n',strtotime('-1 month'));
+$year0 = date('Y');
+$month0 = date('n');
 
 $course_list = get_course_list($db);
 $teacher_list = get_teacher_list($db);
@@ -361,7 +363,6 @@ function default_fee(obj,fee) {
 <h3>生徒の登録 - 更新・削除</h3>
 
 <a href="student_fee_list.php">生徒一覧へ</a>&nbsp;&nbsp;
-<a href="student_fee_add.php">新規登録へ</a>&nbsp;&nbsp;
 <a href="check_cid.php">宛先登録チェックへ</a>&nbsp;&nbsp;
 <a href="menu.php">メニューへ戻る</a><br><br>
 
@@ -421,15 +422,13 @@ function default_fee(obj,fee) {
 	<tr>
 		<th>名前</th>
 		<td>
-			<input type="hidden" name="name" value="<?=$student["name"]?>">
-			<?=$student["name"]?>
+			<input type="hidden" name="name" value="<?=$student["name"]?>"><?=$student["name"]?>
 		</td>
 	</tr>
 	<tr <?=$display?>>
-		<th><font color="red">*</font>&nbsp;ふりがな</th>
+		<th>ふりがな</th>
 		<td>
-			<input type="text" name="furigana" size="35" value="<?=$student["furigana"]?>">
-			<font color="red" size="-1">名字と名前の間に半角スペースを入れてください</font>
+			<input type="hidden" name="furigana" value="<?=$student["furigana"]?>"><?=$student["furigana"]?>
 		</td>
 	</tr>
 	<tr <?=$display?>>
@@ -440,97 +439,57 @@ function default_fee(obj,fee) {
 	</td>
 	</tr>
 	<tr <?=$display?>>
-	<th><font color="red">*</font>&nbsp;生年月日</th><td>
-	<select name="birth_year" onchange="set_grade()">
-	<option value="0"></option>
-<?php
-	for ($i=date('Y');$i>1990;$i--) { echo "	<option value=\"$i\"".($i==$student["birth_year"]?' selected':'').">$i</option>"; }
-	echo "<option value=\"1990\"".($i==$student["birth_year"]?' selected':'').">1990以前</option>";
-?>
-	</select>年
-	<select name="birth_month" onchange="set_grade()">
-	<option value="0"></option>
-<?php
-	for ($i=1;$i<=12;$i++) { echo "	<option value=\"$i\"".($i==$student["birth_month"]?' selected':'').">$i</option>"; }
-?>
-	</select>月
-	<select name="birth_day" onchange="set_grade()">
-	<option value="0"></option>
-<?php
-	for ($i=1;$i<=31;$i++) { echo "	<option value=\"$i\"".($i==$student["birth_day"]?' selected':'').">$i</option>"; }
-?>
-	</select>日
+	<th>生年月日</th><td>
+	<input type="hidden" name="birth_year" value="<?=$student["birth_year"]?>"><?=$student["birth_year"]?>年
+	<input type="hidden" name="birth_month" value="<?=$student["birth_month"]?>"><?=$student["birth_month"]?>月
+	<input type="hidden" name="birth_day" value="<?=$student["birth_day"]?>"><?=$student["birth_day"]?>日
 		&nbsp;&nbsp;
-  学年：<input type="text" name="grade" readonly="readonly" size="2" value="<?= $grade_list[$student["grade"]] ?>">
+  学年：<input type="hidden" name="grade" value="<?= $grade_list[$student["grade"]] ?>"><?= $grade_list[$student["grade"]] ?>
 	（補正
-	<select name="grade_adj" onchange="set_grade()">
-	<option value="3"<?= ($student["grade_adj"]==3?' selected':'') ?>>+3</option>
-	<option value="2"<?= ($student["grade_adj"]==2?' selected':'') ?>>+2</option>
-	<option value="1"<?= ($student["grade_adj"]==1?' selected':'') ?>>+1</option>
-	<option value="0"<?= ($student["grade_adj"]==0?' selected':'') ?>></option>
-	<option value="-1"<?= ($student["grade_adj"]==-1?' selected':'') ?>>-1</option>
-	<option value="-2"<?= ($student["grade_adj"]==-2?' selected':'') ?>>-2</option>
-	<option value="-3"<?= ($student["grade_adj"]==-3?' selected':'') ?>>-3</option>
-	</select>
-	）
+	<input type="hidden" name="grade_adj" value="<?=$student["grade_adj"]?>"><?=$student["grade_adj"]?> ）
 		&nbsp;&nbsp;
-	<input type="checkbox" name="jyukensei" <?= $student["jyukensei"]?"checked":"" ?>>受験生
+	<input type="hidden" name="jyukensei" value="<?= $student["jyukensei"] ?>">
+	<input type="checkbox" <?= $student["jyukensei"]?"checked":"" ?> disabled>受験生
 	</td>
 	</tr>
 	<tr <?=$display?>><th>性別</th><td>
-	<select name="gender">
-	<option value=""></option>
-	<option value="M" <?= ($student['gender']=='M')?'selected':'' ?>>男</option>
-	<option value="F" <?= ($student['gender']=='F')?'selected':'' ?>>女</option>
-	</select>
-	</td><tr>
+	<input type="hidden" name="gender" value="<?=$student['gender']?>">
+	<?= ($student['gender']=='M')?'男':'' ?><?= ($student['gender']=='F')?'女':'' ?>
+	</td></tr>
 	<tr <?=$display?>>
 	<th>授業料の税種別</th><td>
-<?php
-	if ($student["tax_flag"] === "1") {
-?>
-	<input type="hidden" name="tax_flag" value="1">
-	税抜
-<?php
-	} else {
-?>
-		<select name="tax_flag">
-		<option value="0" "selected">税込</option>
-		<option value="1">税抜</option>
-		</select>
-<?php
-	}
-?>
+	<input type="hidden" name="tax_flag" value="<?=$student["tax_flag"]?>">
+	<?= ($student["tax_flag"]==1)?'税抜':'' ?><?= ($student["tax_flag"]==0)?'税込':'' ?>
 	</td>
 	</tr>
 	<tr <?=$display?>>
-	<th>メールアドレス</th><td><input type="text" name="mail_address" size="60" value="<?=$student["mail_address"]?>"></td>
+	<th>メールアドレス</th><td><input type="hidden" name="mail_address" value="<?=$student["mail_address"]?>"><?=$student["mail_address"]?></td>
 	</tr <?=$display?>>
 	<tr <?=$display?>>
-	<th <?=$display?>>CID</th><td><input type="text" name="cid" size="60" value="<?=$student["cid"]?>"></td>
+	<th <?=$display?>>CID</th><td><input type="hidden" name="cid" value="<?=$student["cid"]?>"><?=$student["cid"]?></td>
 	</tr>
 	<tr <?=$display?>>
-	<th>スプレッドシートID</th><td><input type="text" name="sheet_id" size="60" value="<?=$student["sheet_id"]?>"></td>
+	<th>スプレッドシートID</th><td><input type="hidden" name="sheet_id" value="<?=$student["sheet_id"]?>"><?=$student["sheet_id"]?></td>
 	</tr>
 	<tr <?=$display?>>
 	<th>ステータス</th><td>
-		<select name="del_flag">
-		<option value="0" <?php if ($student["del_flag"] == 0) { echo "selected"; } ?>>現生徒</option>
-		<option value="2" <?php if ($student["del_flag"] == 2) { echo "selected"; } ?>>前生徒</option>
-		</select>
+		<input type="hidden" name="del_flag" value="<?=$student["del_flag"]?>">
+		<?= ($student["del_flag"] == 0)?'現生徒':'' ?><?= ($student["del_flag"] == 2)?'前生徒':'' ?>
 	</td>
 	</tr>
 	<tr>
 	<th>授業料免除</th>
 	<td>
-	<input type="checkbox" name="fee_free" value="1" <?= $student["fee_free"]?'checked':'' ?>>
+	<input type="hidden" name="fee_free" value="<?= $student["fee_free"] ?>">
+	<input type="checkbox" <?= $student["fee_free"]?'checked':'' ?> disabled>
 	授業料0円を有効とする
 	</td>
 	</tr>
 	<tr>
 	<th>弓削先生受講料</th>
 	<td>
-	<input type="checkbox" name="yuge_price" value="1" <?= $student["yuge_price"]?'checked':'' ?>>
+	<input type="hidden" name="yuge_price" value="<?= $student["yuge_price"] ?>">
+	<input type="checkbox" <?= $student["yuge_price"]?'checked':'' ?> disabled>
 	期間講習・土日講習プラス1000円
 	</td>
 	</tr>
