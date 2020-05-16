@@ -5,13 +5,21 @@ ini_set( 'display_errors', 0 );
 $err_flag = false ;
 $errArray = array();
 
-$request_year = $_GET['year'];
+$request_year = $_POST['year'];
 $request_year = str_replace("'","",$request_year);
 $request_year = str_replace('"',"",$request_year);
 
-$request_month = $_GET['month'];
+$request_month = $_POST['month'];
 $request_month = str_replace("'","",$request_month);
 $request_month = str_replace('"',"",$request_month);
+
+$request_user_id = $_POST['user_id'];
+$request_user_id = str_replace("'","",$request_user_id);
+$request_user_id = str_replace('"',"",$request_user_id);
+
+$request_replace = $_POST['replace'];
+$request_replace = str_replace("'","",$request_replace);
+$request_replace = str_replace('"',"",$request_replace);
 
 require_once "./const/const.inc";
 require_once "./func.inc";
@@ -61,7 +69,7 @@ if (!$request_year){
 	goto exit_label;
 }
 
-if ($request_year < 2015 ){
+if ($request_year < 2020 ){
 	$err_flag = true;
 	$message = 'Error: request_year is not correct.';
 	array_push($errArray,$message);
@@ -91,17 +99,16 @@ $request_enddate = $request_year.'-'.$request_month.'-'.$enddate['mday'];
 
 if (!$request_user_id){
 	$request_user_id = 0;
+} else {
+	$request_user_id = (int) $request_user_id;
 }
 
 mb_regex_encoding("UTF-8");
 $teacher_list = get_teacher_list($db);
 $member_list = get_member_list($db);
-			// レッスンリストの取得
-
 $now = date('Y-m-d H:i:s');
 
 try{
-
 	$sql = "SELECT insert_timestamp FROM tbl_fixed WHERE year=? AND month=?";
 	$stmt = $db->prepare($sql);
 	$stmt->bindValue(1, $request_year, PDO::PARAM_INT);
@@ -109,20 +116,20 @@ try{
 	$stmt->execute();
 	$rslt = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-	if (!$rslt){ // not found
+	if (!$rslt){ 		// not found
 		$err_flag = true;
 		$message = 'Error: target data is not commited.';
 		array_push($errArray,$message);
 		goto exit_label;
 	}
 
-	if ($request_member_no > 0) {
+	$request_year_str = (string)$request_year;
+	$request_month_str = (string)$request_month;
+
+	if ($request_user_id > 0) {
 				// 当該月の当該user_idのデータをtbl_eventから削除する
-		$request_year_str = (string)$request_year;
 
-		$request_month_str = (string)$request_month;
-
-		$request_member_no_str = (string)$request_member_no;
+		$request_member_no_str = (string)$request_user_id;
 				// adjusting member_no to 6 digits.
 		if (strlen($request_member_no_str) === 1){
 			$request_member_no_str = '00000'.$request_member_no_str;
@@ -135,13 +142,47 @@ try{
 		} else if (strlen($request_member_no_str) === 5){
 			$request_member_no_str = '0'.$request_member_no_str;
 		}
-
-		$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? AND member_no = ? ".
+		if ($request_user_id < 100000 ){
+			$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? AND member_no = ? ";
+			$stmt = $db->prepare($sql);
+			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
+			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
+			$stmt->bindValue(3, $request_member_no_str, PDO::PARAM_STR);
+			$stmt->execute();
+		} else {
+			$sql = "DELETE FROM tbl_event_staff where event_year = ? AND event_month = ? AND member_no = ? ";
+			$stmt = $db->prepare($sql);
+			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
+			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
+			$stmt->bindValue(3, $request_member_no_str, PDO::PARAM_STR);
+			$stmt->execute();
+		}
+	} else if (!$request_replace) { 		// the parameter replace is not specified. Then if the data exist, notify an error.
+		$sql = "SELECT COUNT(*) AS COUNT FROM tbl_event where event_year = ? AND event_month = ? ";
 		$stmt = $db->prepare($sql);
 		$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
 		$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
-		$stmt->bindValue(3, $request_member_no_str, PDO::PARAM_STR);
 		$stmt->execute();
+		$already_exist = (int)$stmt->fetchColumn();
+		if ($already_exist > 0) {
+			$err_flag = true;
+			$message = 'Error: target month has been already set up. use replace mode to replace them.';
+			array_push($errArray,$message);
+			goto exit_label;
+		} 
+	} else { 			// the parameter replace is specified. Then delete existing data.
+			$sql = "DELETE FROM tbl_event where event_year = ? AND event_month = ? ";
+			$stmt = $db->prepare($sql);
+			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
+			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
+			$stmt->execute();
+
+					// the parameter replace is specified. Then delete existing data.
+			$sql = "DELETE FROM tbl_event_staff where event_year = ? AND event_month = ? ";
+			$stmt = $db->prepare($sql);
+			$stmt->bindValue(1, $request_year_str, PDO::PARAM_STR);
+			$stmt->bindValue(2, $request_month_str, PDO::PARAM_STR);
+			$stmt->execute();
 	}
 
 
@@ -173,15 +214,15 @@ try{
 	"googlecal_id,".
 	"googleevent_id,".
 	"recurrence_id".
-	" FROM tbl_schedule_onetime WHERE delflag!=1 AND cancel!='c' AND ymd BETWEEN ? AND ? ";
-	if ($request_member_no > 0) {
-		$sql .= " AND where user_id= ?";
+	" FROM tbl_schedule_onetime WHERE delflag!=1 AND (cancel IS NULL OR cancel!='c') AND ymd BETWEEN ? AND ? ";
+	if ($request_user_id > 0) {
+		$sql .= " AND user_id= ?";
 	}
 	$stmt = $dbh->prepare($sql);
 	$stmt->bindValue(1, $request_startdate, PDO::PARAM_STR);
 	$stmt->bindValue(2, $request_enddate, PDO::PARAM_STR);
-	if ($request_member_no > 0) {
-		$stmt->bindValue(3, $request_member_no, PDO::PARAM_INT);
+	if ($request_user_id > 0) {
+		$stmt->bindValue(3, $request_user_id, PDO::PARAM_INT);
 	}
 	$stmt->execute();
         $schedule_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -233,6 +274,9 @@ try{
 		$event_diff_hours = ($event_end_timestamp - $event_start_timestamp) / (60*60);
 
 		$evt_summary = '';			// Initialization.
+		$lesson_id = 0;
+		$course_id = 0;
+		$subject_id = 0;
 
 		$lecture_list = get_lecture_vector($db,$lecture_id);
 		$row_cnt = count($lecture_list) ;
@@ -283,7 +327,7 @@ try{
 			$result = $stmt->fetch(PDO::FETCH_ASSOC);
 			$staff_cal_name = $result['name'];
 			$evt_summary = $evt_summary.$staff_cal_name;
-			$event_summary = $event_summary.$CONST_SAN;
+			$evt_summary = $evt_summary.CONST_SAN;
 
 		} else if ($user_id > 100000 ) { // teacher
 			$member_cal_name = ' ';
@@ -293,7 +337,7 @@ try{
 					$evt_summary = $evt_summary.CONST_SENSEI;
 				}
 			}
-		} else if ($user_id > 0 ) { // student
+		} else if ($user_id > 1 ) { // student
 			$member_cal_name = ' ';
 			foreach ($member_list as $member) {
 				if ($member['no'] == $user_id ){
@@ -303,6 +347,12 @@ try{
 					$evt_summary = $evt_summary.CONST_SAMA;
 				}
 			}
+		} else if ($user_id == 1 ) { // try student
+			$trial_id = '1'; 
+			$grade = $trial_num;
+			$member_cal_name = CONST_TRYSTUDENT;
+			$evt_summary = $evt_summary.$member_cal_name;
+			$evt_summary = $evt_summary.CONST_SAMA;
 		} else if ($user_id < 0 ) { // student not defined.
 			if ($comment !== ' '){
 				$member_cal_name = $comment;
@@ -312,6 +362,7 @@ try{
 			$evt_summary = $evt_summary.$member_cal_name;
 			$evt_summary = $evt_summary.CONST_SAMA;
 			if ($trial_num > 0 ) {
+				$trial_id = '1'; 
 				$grade = $trial_num;
 			}
 		}
@@ -347,12 +398,12 @@ try{
 			$evt_summary = $evt_summary.CONST_CLOSING ;
 		}
 
-		if ($subject_id) {		// setting subject name 
+		if ($subject_id > 0 ) {		// setting subject name 
 			$evt_summary = $evt_summary.CONST_COLON ;
 			$evt_summary = $evt_summary.$subject_list[$subject_id];
 		}
 
-		if ($teacher_id) {			// setting teacher name 
+		if ( $user_id < 100000 ) {			// setting teacher name 
 			$evt_summary = $evt_summary.CONST_COLON ;
 			foreach ($teacher_list as $teacher) {
 				if ($teacher['no'] == $teacher_id - 100000){
@@ -411,9 +462,10 @@ try{
                         "cal_evt_summary, ".
                         "cal_evt_location, ".
                         "cal_evt_description, ".
+                        "insert_datetime, ".
                         "update_datetime, ".
                         "place_floors".
-                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			$stmt = $db->prepare($sql);
 			$stmt->bindValue(1, $schedule_id, PDO::PARAM_INT);
 			$stmt->bindValue(2, $staff_no, PDO::PARAM_INT);
@@ -431,7 +483,8 @@ try{
 			$stmt->bindValue(14, $googlecal_evt_location, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->bindValue(15, $googlecal_evt_description, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->bindValue(16, $now, PDO::PARAM_STR);   
-			$stmt->bindValue(17, $place_id, PDO::PARAM_INT);  // setting place_floors. 
+			$stmt->bindValue(17, $now, PDO::PARAM_STR);   
+			$stmt->bindValue(18, $place_id, PDO::PARAM_INT);  // setting place_floors. 
 			$stmt->execute();
                
 		 }  else {			// スタッフでない場合
@@ -466,6 +519,7 @@ try{
                         " course_id, ".
                         " teacher_id, ".
                         " place_floors, ".
+                        " place_id, ".
                         " absent_flag, ".
                         " trial_flag, ".
                         " interview_flag, ".
@@ -480,13 +534,14 @@ try{
                         " cal_attendance_data, ".
                         " cal_evt_location, ".
                         " cal_evt_description, ".
+                        " insert_datetime, ".
                         " update_datetime, ".
                         " seikyu_year, ".
                         " seikyu_month,".
                         " recurringEvent, ".
                         " grade, ".
                         " monthly_fee_flag ".
-                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         $stmt = $db->prepare($sql);
 			$stmt->bindValue(1, $schedule_id, PDO::PARAM_STR);
 			$stmt->bindValue(2, $member_no, PDO::PARAM_STR);
@@ -508,38 +563,40 @@ try{
 			$stmt->bindValue(18, $course_id, PDO::PARAM_STR);  
 			$stmt->bindValue(19, $teacher_id, PDO::PARAM_STR);
 			$stmt->bindValue(20, $place_id, PDO::PARAM_INT); 	// setting place_floors column . 
-			$stmt->bindValue(21, $absent_flag, PDO::PARAM_STR);
-			$stmt->bindValue(22, $trial_flag, PDO::PARAM_STR);  
-			$stmt->bindValue(23, $interview_flag, PDO::PARAM_STR);  
-			$stmt->bindValue(24, $alternative_flag, PDO::PARAM_STR);  
-			$stmt->bindValue(25, $absent1_num, PDO::PARAM_INT);  
-			$stmt->bindValue(26, $absent2_num, PDO::PARAM_INT);  
-			$stmt->bindValue(27, $trial_num, PDO::PARAM_INT);  
-			$stmt->bindValue(28, $repeat_flag, PDO::PARAM_INT);  
-			$stmt->bindValue(29, $googlecal_id, PDO::PARAM_STR);   
-			$stmt->bindValue(30, $googlecal_summary, PDO::PARAM_STR);  // NULL値をセット 
-			$stmt->bindValue(31, $evt_summary, PDO::PARAM_STR);  
+			$stmt->bindValue(21, $place_id, PDO::PARAM_INT); 	// setting place_floors column . 
+			$stmt->bindValue(22, $absent_flag, PDO::PARAM_STR);
+			$stmt->bindValue(23, $trial_flag, PDO::PARAM_STR);  
+			$stmt->bindValue(24, $interview_flag, PDO::PARAM_STR);  
+			$stmt->bindValue(25, $alternative_flag, PDO::PARAM_STR);  
+			$stmt->bindValue(26, $absent1_num, PDO::PARAM_INT);  
+			$stmt->bindValue(27, $absent2_num, PDO::PARAM_INT);  
+			$stmt->bindValue(28, $trial_num, PDO::PARAM_INT);  
+			$stmt->bindValue(29, $repeat_flag, PDO::PARAM_INT);  
+			$stmt->bindValue(30, $googlecal_id, PDO::PARAM_STR);   
+			$stmt->bindValue(31, $googlecal_summary, PDO::PARAM_STR);  // NULL値をセット 
+			$stmt->bindValue(32, $evt_summary, PDO::PARAM_STR);  
 			$cal_attendance_data = $evt_summary ; 
-			$stmt->bindValue(32, $cal_attendance_data, PDO::PARAM_STR);  // $evt_summary と同じ値をセット 
-			$stmt->bindValue(33, $googlecal_evt_location, PDO::PARAM_STR);  // NULL値をセット 
-			$stmt->bindValue(34, $googlecal_evt_description, PDO::PARAM_STR);  // NULL値をセット 
-			$stmt->bindValue(35, $now, PDO::PARAM_STR);   
-			$stmt->bindValue(36, $request_year, PDO::PARAM_STR);   
-			$stmt->bindValue(37, $request_month, PDO::PARAM_STR);   
-			$stmt->bindValue(38, $recurringEvent, PDO::PARAM_STR);   
-			$stmt->bindValue(39, $grade, PDO::PARAM_STR);   
-			$stmt->bindValue(40, $monthly_fee_flag, PDO::PARAM_STR);  // NULL値をセット 
+			$stmt->bindValue(33, $cal_attendance_data, PDO::PARAM_STR);  // $evt_summary と同じ値をセット 
+			$stmt->bindValue(34, $googlecal_evt_location, PDO::PARAM_STR);  // NULL値をセット 
+			$stmt->bindValue(35, $googlecal_evt_description, PDO::PARAM_STR);  // NULL値をセット 
+			$stmt->bindValue(36, $now, PDO::PARAM_STR);   
+			$stmt->bindValue(37, $now, PDO::PARAM_STR);   
+			$stmt->bindValue(38, $request_year, PDO::PARAM_STR);   
+			$stmt->bindValue(39, $request_month, PDO::PARAM_STR);   
+			$stmt->bindValue(40, $recurringEvent, PDO::PARAM_STR);   
+			$stmt->bindValue(41, $grade, PDO::PARAM_STR);   
+			$stmt->bindValue(42, $monthly_fee_flag, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->execute();
 		}	// スタッフでない場合
         }		// end of foreach
 
 exit_label:
 }catch (PDOException $e){
-	print_r('insert_calender_event:failed: ' . $e->getMessage());
+	print_r('insert_calender_event:failed:' . $e->getMessage());
 	return false;
 }
 
-// レクチャIDからレッスンID,コースID、科目IDを取得する
+			// レクチャIDからレッスンID,コースID、科目IDを取得する
 function get_lecture_vector(&$db,$lecture_id) {
         $sql = "SELECT lesson_id,course_id,subject_id FROM tbl_lecture WHERE lecture_id = ?";
         $stmt = $db->prepare($sql);
@@ -598,4 +655,3 @@ if ($err_flag == true) {
 </div>
 </body>
 </html>
-
