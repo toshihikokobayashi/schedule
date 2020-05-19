@@ -201,6 +201,7 @@ try{
 	"cancel_reason, ".
 	"alternate, ".
 	"altsched_id, ".
+	"trial_id,".
 	"absent1_num,".
 	"absent2_num,".
 	"trial_num,".
