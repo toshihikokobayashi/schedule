@@ -170,10 +170,16 @@ try {
 		
 		$date_count = count($schedules);
 		
-		if 			($class_type == 'sat_sun_class')			{ $date_count_index=3; }
-		else if	($date_count >= LESSON_DATE_COUNT_2)	{ $date_count_index=2; }
-		else if	($date_count >= LESSON_DATE_COUNT_1)	{ $date_count_index=1; }
-		else																					{ $date_count_index=0; }
+		if (!($year==2020 && $month==5)) {
+			if 			($class_type == 'sat_sun_class')			{ $date_count_index=3; }
+			else if	($date_count >= LESSON_DATE_COUNT_2)	{ $date_count_index=2; }
+			else if	($date_count >= LESSON_DATE_COUNT_1)	{ $date_count_index=1; }
+			else																					{ $date_count_index=0; }
+		} else {
+			if			($date_count >= 15)	{ $date_count_index=2; }
+			else if	($date_count >= 10)	{ $date_count_index=1; }
+			else												{ $date_count_index=0; }
+		}
 		$exercise_fee = $exercise_fee_table[$season_fee_type][$member['season_course_id'][0]][$date_count_index];
 		
 		if ($member_list[$member_no]['fee_free']) { $exercise_fee = 0; }

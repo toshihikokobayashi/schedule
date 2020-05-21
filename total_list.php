@@ -509,6 +509,7 @@ function cmp_hours($a, $b) {
 
 
 <h3><?= $year ?>年<?= $month ?>月</h3>
+作成日付：<?= date('Y/m/d H:i:s') ?><br>
 <?php
 if (count($price_list) > 0) {
 ?>

@@ -261,6 +261,7 @@ $sat_sun_class_date_list = array(
 "2020/04/26",
 "2020/04/29",
 
+/*
 "2020/05/02",
 "2020/05/03",
 "2020/05/04",
@@ -283,7 +284,21 @@ $sat_sun_class_date_list = array(
 "2020/06/21",
 "2020/06/27",
 "2020/06/28"
+*/
 
+"2020/05/19",
+"2020/05/20",
+"2020/05/21",
+"2020/05/22",
+"2020/05/23",
+"2020/05/24",
+"2020/05/25",
+"2020/05/26",
+"2020/05/27",
+"2020/05/28",
+"2020/05/29",
+"2020/05/30",
+"2020/05/31"
 );
 foreach ($sat_sun_class_date_list as $i=>$item) { if ($i==0) { $sat_sun_class_date_list_string = "('$item'"; } else { $sat_sun_class_date_list_string = $sat_sun_class_date_list_string.",'$item'"; } }
 $sat_sun_class_date_list_string = $sat_sun_class_date_list_string.")";
@@ -789,7 +804,7 @@ function get_member($db, $param_array=array(), $value_array=array()) {
 	$member_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	$member_list = array();
 	foreach ( $member_array as $row ) {
-		$param_array = array("tbl_fee.member_no = ?");
+		$param_array = array("tbl_fee.member_no = ?", "tbl_teacher.del_flag = '0'");
 		$value_array = array($row["no"]);
 		$row["fee_list"] = get_fee_list($db, $param_array, $value_array);
 		$row["m_fee_list"] = get_m_fee_list($db, array("tbl_monthly_fee.member_no = ?"), array($row["no"]));
@@ -854,7 +869,7 @@ function get_member_list($db, $param_array=array(), $value_array=array(), $order
 	$member_list = array();
 	foreach ( $member_array as $row ) {
 		if ($row["name"] == "体験生徒") { continue; }
-		$param_array = array("tbl_fee.member_no = ?");
+		$param_array = array("tbl_fee.member_no = ?", "tbl_teacher.del_flag = '0'");
 		$value_array = array($row["no"]);
 		$row["fee_list"] = get_fee_list($db, $param_array, $value_array);
 		$row["m_fee_list"] = get_m_fee_list($db, array("tbl_monthly_fee.member_no = ?"), array($row["no"]));

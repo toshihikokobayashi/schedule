@@ -450,7 +450,7 @@ if ($last_month_date_list) {
 
 // 通常授業（期間講習・土日講習以外の授業）イベント取得
 $sql = "SELECT e.cal_evt_summary, e.cal_id, e.course_id, e.event_end_timestamp, e.event_start_timestamp, ".
-		"e.grade, e.lesson_id, e.member_cal_name, e.member_no, e.recurringEvent, e.subject_id, e.trial_flag, ".
+		"e.lesson_id, e.member_cal_name, e.member_no, e.recurringEvent, e.subject_id, e.trial_flag, ".
 		"e.absent_flag, m.name, m.furigana, m.grade, e.grade as tgrade, e.event_year, e.event_month, e.event_day ".
 		"FROM tbl_event e LEFT OUTER JOIN tbl_member m ".
 		"on e.member_no=m.no where e.event_year=? and e.event_month=? and e.teacher_id=? ".
@@ -460,6 +460,15 @@ $stmt->execute(array($year, $month, $teacher_id));
 $event_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($event_list as &$event) {
+	
+	if ($event['trial_flag']) {
+		$event['member_cal_name'] = trim($event['member_cal_name']);
+		foreach ($member_list as $item)
+			if ($event['member_cal_name'] == $item['name']) {
+				$event['tgrade'] = $item['grade'];
+				break;
+			}
+	}
 		
 	$event["date"] = date("n月j日", $event['event_start_timestamp']);
 	$event["time"] = date("H:i", $event['event_start_timestamp']) ." ～ ". date("H:i", $event['event_end_timestamp']);
@@ -572,6 +581,7 @@ foreach ($event_list as &$event) {
 }
 unset($event);
 
+/*
 // 期間講習追加
 $season_exercise = array();
 if ($date_list_string != '()') {
@@ -732,6 +742,7 @@ if ($date_list_string != '()') {
 		}
 	}
 }
+*/
 
 foreach ($event_list as $key => $value) {
     $sort1[$key] = $value['date'];
@@ -747,6 +758,12 @@ array_multisort(
 $no=0; $i=0; $member_count = 0; $rowspan=1;
 $event = reset($event_list);
 while ($event) {
+/*
+	if ($event['course_id'] == 9 || $event['course_id']==10) {
+		$event = next($event_list);
+		continue;
+	}
+*/
 	$diff_hours = $event['diff_hours'];
 	$next_event = $event;
 	$absent_flag_min = 2;
@@ -851,7 +868,8 @@ if ($teacher_id==$log_tid) {echo"$work_type,{$event['date']},{$event['time']},{$
 	
 	$wage_type_list = '';
 	if ($work_type_flag) {} else
-	if ($event["member_no"]) {
+	if ($event["subject_id"]) {
+//	if ($event["member_no"]) {
 		
 		$wage_no = -1; 
 		switch ($lesson_id) {
