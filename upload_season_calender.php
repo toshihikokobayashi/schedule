@@ -467,11 +467,11 @@ foreach ( $season_teacherattend_array as $row ) {
 				// reach the end of times string. do nothing.
 		}
 
-		$attendstime_str = $row['date'].' '.$attendstime.':00';
+		$attendstime_str = $datewithslash.' '.$attendstime.':00';
 		$dateObj = new DateTime($attendstime_str);
 		$attendstime_ts = $dateObj->getTimestamp();
 
-		$attendetime_str = $row['date'].' '.$crnt_time_string.':00';
+		$attendetime_str = $datewithslash.' '.$crnt_time_string.':00';
 		$dateObj = new DateTime($attendetime_str);
 		$attendetime_ts = $dateObj->getTimestamp();
 		$attendetime_ts = strtotime('+30 minute',$attendetime_ts); // 30分単位の開始時間のため終了時間は+30分
@@ -509,7 +509,7 @@ foreach ( $season_teacherattend_array as $row ) {
 						// 先生の演習時間を求める
 		$status = insert_teacherattend_schedule($db,$dbh,$teacher_no,$attendstime_ts,$attendetime_ts,$place_id);
 
-		$attendstime == '' ;		// initialization.
+		$attendstime = '' ;		// initialization.
 		$offset = $offset + 6;		// increment the offset by six characters. 'hh:mm,'
 	}	// end of for.
 
@@ -934,7 +934,11 @@ foreach ( $teacherattend_schedule_array as $row ) {
 			continue;
 	} else  if ($workstime_ts > $crnt_ts) { 		//次のman2manが始まるまでに自習時間がある
 		$start_timestamp = $crnt_ts ;
-		$end_timestamp = $workstime_ts ;
+		if ($attendetime_ts > $workstime_ts) {
+			$end_timestamp = $workstime_ts ;
+		} else {
+			$end_timestamp = $attendetime_ts ;	// attend time finish before man2man seminar start.
+		}
 		$crnt_ts = $worketime_ts;
 
 	  			 // Initialization.
