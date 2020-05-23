@@ -395,7 +395,7 @@ function blankCheck() {
 	<input type="submit" value="実行">
 	</form>
 	<br>
-       <h4>■ 季節講習スケジュール取り込み</h4>
+       <h4>■ 季節講習・土日講習スケジュール取り込み</h4>
         <form method="post" action="upload_season_calender.php">
 	開始年：<input type="text" name="startyear" value="<?php echo $year1; ?>" size="4">年&nbsp;
         開始月：<input type="text" name="startmonth" value="" size="4">月&nbsp;
