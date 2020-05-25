@@ -278,6 +278,7 @@ try{
 		$lesson_id = 0;
 		$course_id = 0;
 		$subject_id = 0;
+		$recurringEvent = '1';
 
 		$lecture_list = get_lecture_vector($db,$lecture_id);
 		$row_cnt = count($lecture_list) ;
@@ -312,6 +313,7 @@ try{
 		}
 		if ($alternate !=='' || $altsched_id > 0 ) { 
 			$alternative_flag = '1' ;  
+			$recurringEvent = '0';
 			$event_diff_hours = 0;
 			$evt_summary = $evt_summary.CONST_ALTERNATE;
 		} else {
@@ -433,7 +435,7 @@ try{
 
 		if ($recurrence_id !== 0 ) { 
 							// 繰り返しスケジュールを表す
-			$recurringEvent = "1";
+			//$recurringEvent = "1";
 		} 
 		if ($work_id==5) {			// 演習の文字列をセット 
 			$evt_summary = $evt_summary.CONST_SS ;
