@@ -494,7 +494,7 @@ foreach ( $season_teacherattend_array as $row ) {
 		$starttime_str = date("H:i:s",$start_timestamp);
 		$endtime_str = date("H:i:s",$end_timestamp);
 
-		$sql = "SELECT place_id FROM tbl_schedule_onetime WHERE ymd=? AND teacher_id=? AND starttime >=?  AND endtime <=?"; 
+		$sql = "SELECT place_id FROM tbl_schedule_onetime WHERE ymd=? AND teacher_id=? AND starttime >=?  AND endtime <=? and delflag=0"; 
 							// select from tbl_schedule_onetime.
 		$stmt = $dbh->prepare($sql);
 		$stmt->bindValue(1, $datewithhyphen, PDO::PARAM_STR);
