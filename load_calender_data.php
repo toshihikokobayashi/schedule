@@ -107,25 +107,10 @@ mb_regex_encoding("UTF-8");
 $teacher_list = get_teacher_list($db);
 $member_list = get_member_list($db);
 $now = date('Y-m-d H:i:s');
+$request_year_str = (string)$request_year;
+$request_month_str = (string)$request_month;
 
 try{
-	$sql = "SELECT insert_timestamp FROM tbl_fixed WHERE year=? AND month=?";
-	$stmt = $db->prepare($sql);
-	$stmt->bindValue(1, $request_year, PDO::PARAM_INT);
-	$stmt->bindValue(2, $request_month, PDO::PARAM_INT);
-	$stmt->execute();
-	$rslt = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-	if (!$rslt){ 		// not found
-		$err_flag = true;
-		$message = 'Error: target data is not commited.';
-		array_push($errArray,$message);
-		goto exit_label;
-	}
-
-	$request_year_str = (string)$request_year;
-	$request_month_str = (string)$request_month;
-
 	if ($request_user_id > 0) {
 				// 当該月の当該user_idのデータをtbl_eventから削除する
 
@@ -446,6 +431,38 @@ try{
 		if ($work_id==11) {			// 季節講習演習の文字列をセット 
 			$evt_summary = $evt_summary.CONST_SEASONSS ;
 		}
+		switch ($place_id) {			// tbl_schedule_onetime のplace_idからtbl_eventのplace_idをセット 
+		case '1':		// Toyoda
+			$new_place_id = 8 ;
+			break;
+		case '2':		// north exit 2nd floor.
+			$new_place_id = 11 ;
+			break;
+		case '3':		// north exit 3rd floor.
+			$new_place_id = 3 ;
+			break;
+		case '4':		// north exit 4th floor.
+			$new_place_id = 4 ;
+			break;
+		case '5':		// south exit 
+			$new_place_id = 2 ;
+			break;
+		case '6':		// kunitachi
+			$new_place_id = 10 ;
+			break;
+		case '7':		// koyasu
+			$new_place_id = 9 ;
+			break;
+		case '8':		// Dattocchi
+			$new_place_id = 7 ;
+			break;
+		case '9':		// arrowore
+			$new_place_id = 6 ;
+			break;
+		case '10':		// home
+			$new_place_id = 0 ;
+			break;
+		}
 
 		if ($user_id > 200000 ) {	// スタッフの場合
 			$staff_no = $user_id - 200000 ;
@@ -487,7 +504,7 @@ try{
 			$stmt->bindValue(15, $googlecal_evt_description, PDO::PARAM_STR);  // NULL値をセット 
 			$stmt->bindValue(16, $now, PDO::PARAM_STR);   
 			$stmt->bindValue(17, $now, PDO::PARAM_STR);   
-			$stmt->bindValue(18, $place_id, PDO::PARAM_INT);  // setting place_floors. 
+			$stmt->bindValue(18, $new_place_id, PDO::PARAM_INT);  // setting place_floors. 
 			$stmt->execute();
                
 		 }  else {			// スタッフでない場合
@@ -565,8 +582,8 @@ try{
 			$stmt->bindValue(17, $subject_id, PDO::PARAM_STR);  
 			$stmt->bindValue(18, $course_id, PDO::PARAM_STR);  
 			$stmt->bindValue(19, $teacher_id, PDO::PARAM_STR);
-			$stmt->bindValue(20, $place_id, PDO::PARAM_INT); 	// setting place_floors column . 
-			$stmt->bindValue(21, $place_id, PDO::PARAM_INT); 	// setting place_floors column . 
+			$stmt->bindValue(20, $new_place_id, PDO::PARAM_INT); 	// setting place_floors column . 
+			$stmt->bindValue(21, $new_place_id, PDO::PARAM_INT); 	// setting place_floors column . 
 			$stmt->bindValue(22, $absent_flag, PDO::PARAM_STR);
 			$stmt->bindValue(23, $trial_flag, PDO::PARAM_STR);  
 			$stmt->bindValue(24, $interview_flag, PDO::PARAM_STR);  
