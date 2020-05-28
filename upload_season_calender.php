@@ -273,13 +273,13 @@ foreach ( $season_entry_date_array as $season_entry_date_row ) {
 	foreach ( $season_class_entry_date_array as $season_class_entry_date_row ) {
        		$place_char = $season_class_entry_date_row['place'] ;
 		if (mb_strpos($place_char,'八王子北口校舎')!== FALSE) {
-                      $place_id = 4;
+                      $place_id = 5;
 		      break;
                } else if (mb_strpos($place_char,'国立校舎')!== FALSE) {
-                      $place_id = 6;
+                      $place_id = 11;
 		      break;
                } else if (mb_strpos($place_char,'豊田校舎')!== FALSE) {
-                      $place_id = 1;
+                      $place_id = 8;
 		      break;
                } 
 	}
@@ -429,55 +429,89 @@ $stmt->execute();
 $season_teacherattend_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ( $season_teacherattend_array as $row ) {
+	$times_string = $row['times'];
+	$times_string_length = strlen($times_string) ;
         $datewithslash = $row['date'];
         $datewithhyphen = mb_ereg_replace('/','-',$datewithslash);
 			// replace '/' with '-'
 	$teacher_no = $row['no'];
-	$attendstime = substr($row['times'],0,5);			// format hh:mm
-	$lastoffset = strlen($row['times']) - 5;
-	$attendetime = substr($row['times'],$lastoffset,5);	// format hh:mm
+	$attendstime = '';
+	$offset = 0;
 
-	$attendstime_str = $row['date'].' '.$attendstime.':00';
-	$dateObj = new DateTime($attendstime_str);
-	$attendstime_ts = $dateObj->getTimestamp();
+	while ($offset < $times_string_length) {
+								// analyze times string.
+		$crnt_time_string  = substr($times_string,$offset,5);	// format hh:mm
+		if ($attendstime == '' ) {
+			$attendstime = $crnt_time_string;			// format hh:mm 
+		}
+		$crnt_hour = (integer) substr($crnt_time_string,0,2);
+		$crnt_minute = (integer)substr($crnt_time_string,3,2);
+		if ($crnt_minute == 30 ) {
+			$expect_next_hour = $crnt_hour + 1;
+			$expect_next_minute = 0 ;
+		} else if ($crnt_minute == 0) {
+			$expect_next_hour = $crnt_hour ;
+			$expect_next_minute = 30 ;
+	 	}	
+		$nextoffset = $offset + 6;		// increment 6 characters like 'hh:mm,'
+		if ($nextoffset < $times_string_length ) {
+			$next_time_string  = substr($times_string,$nextoffset,5);	// format hh:mm
+			$next_hour = (integer)substr($next_time_string,0,2);
+			$next_minute = (integer)substr($next_time_string,3,2);
 
-	$attendetime_str = $row['date'].' '.$attendetime.':00';
-	$dateObj = new DateTime($attendetime_str);
-	$attendetime_ts = $dateObj->getTimestamp();
-	$attendetime_ts = strtotime('+30 minute',$attendetime_ts); // 30分単位の開始時間のため終了時間は+30分
+			if ($expect_next_hour == $next_hour && $expect_next_minute == $next_minute ) {
+				$offset = $offset + 6;		// increment the offset by six characters. 'hh:mm,'
+				continue;	// time string is sequential.
+			}
+		} else {
+				// reach the end of times string. do nothing.
+		}
+
+		$attendstime_str = $datewithslash.' '.$attendstime.':00';
+		$dateObj = new DateTime($attendstime_str);
+		$attendstime_ts = $dateObj->getTimestamp();
+
+		$attendetime_str = $datewithslash.' '.$crnt_time_string.':00';
+		$dateObj = new DateTime($attendetime_str);
+		$attendetime_ts = $dateObj->getTimestamp();
+		$attendetime_ts = strtotime('+30 minute',$attendetime_ts); // 30分単位の開始時間のため終了時間は+30分
 	
 															// 当該スケジュールが既に入力済かをチェックする
-	$start_timestamp = $attendstime_ts;
-	$end_timestamp = $attendetime_ts;
-	$user_id = $teacher_no + 100000 ;
-	$onetime_schedule_status = check_target_schedule($dbh,$datewithhyphen,$start_timestamp,$end_timestamp,$user_id);
+		$start_timestamp = $attendstime_ts;
+		$end_timestamp = $attendetime_ts;
+		$user_id = $teacher_no + 100000 ;
+		$onetime_schedule_status = check_target_schedule($dbh,$datewithhyphen,$start_timestamp,$end_timestamp,$user_id);
 
-	if ($onetime_schedule_status == 'new'){
-		// insert.
-	} else if ($onetime_schedule_status == 'confirmed'){
-		$message = "Error: confirmed:user_id=$user_id,date=$datewithhyphen";
-		array_push($errArray,$message);
-		// skip insert process.
-		continue;
-	}
+		if ($onetime_schedule_status == 'new'){
+			// insert.
+		} else if ($onetime_schedule_status == 'confirmed'){
+			$message = "Error: confirmed:user_id=$user_id,date=$datewithhyphen";
+			array_push($errArray,$message);
+			// skip insert process.
+			continue;
+		}
 
-	$starttime_str = date("H:i:s",$start_timestamp);
-	$endtime_str = date("H:i:s",$end_timestamp);
+		$starttime_str = date("H:i:s",$start_timestamp);
+		$endtime_str = date("H:i:s",$end_timestamp);
 
-	$sql = "SELECT place_id FROM tbl_schedule_onetime WHERE ymd=? AND teacher_id=? AND starttime >=?  AND endtime <=?"; 
+		$sql = "SELECT place_id FROM tbl_schedule_onetime WHERE ymd=? AND teacher_id=? AND starttime >=?  AND endtime <=?"; 
 							// select from tbl_schedule_onetime.
-	$stmt = $dbh->prepare($sql);
-	$stmt->bindValue(1, $datewithhyphen, PDO::PARAM_STR);
-	$stmt->bindValue(2, $user_id, PDO::PARAM_INT);
-	$stmt->bindValue(3, $starttime_str, PDO::PARAM_STR);
-	$stmt->bindValue(4, $endtime_str, PDO::PARAM_STR);
-	$stmt->execute();
-        $place_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        foreach ( $place_array as $row ) {
-                $place_id = $row["place_id"];
-        }
+		$stmt = $dbh->prepare($sql);
+		$stmt->bindValue(1, $datewithhyphen, PDO::PARAM_STR);
+		$stmt->bindValue(2, $user_id, PDO::PARAM_INT);
+		$stmt->bindValue(3, $starttime_str, PDO::PARAM_STR);
+		$stmt->bindValue(4, $endtime_str, PDO::PARAM_STR);
+		$stmt->execute();
+        	$place_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        	foreach ( $place_array as $row ) {
+               		 $place_id = $row["place_id"];
+        	}
 						// 先生の演習時間を求める
-	$status = insert_teacherattend_schedule($db,$dbh,$teacher_no,$attendstime_ts,$attendetime_ts,$place_id);
+		$status = insert_teacherattend_schedule($db,$dbh,$teacher_no,$attendstime_ts,$attendetime_ts,$place_id);
+
+		$attendstime = '' ;		// initialization.
+		$offset = $offset + 6;		// increment the offset by six characters. 'hh:mm,'
+	}	// end of for.
 
 }
 
@@ -900,7 +934,11 @@ foreach ( $teacherattend_schedule_array as $row ) {
 			continue;
 	} else  if ($workstime_ts > $crnt_ts) { 		//次のman2manが始まるまでに自習時間がある
 		$start_timestamp = $crnt_ts ;
-		$end_timestamp = $workstime_ts ;
+		if ($attendetime_ts > $workstime_ts) {
+			$end_timestamp = $workstime_ts ;
+		} else {
+			$end_timestamp = $attendetime_ts ;	// attend time finish before man2man seminar start.
+		}
 		$crnt_ts = $worketime_ts;
 
 	  			 // Initialization.
