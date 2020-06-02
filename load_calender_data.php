@@ -53,6 +53,14 @@ define('CONST_SEASONSS','：季節講習演習');
 define('CONST_SEASON','：季節講習');
 define('CONST_NOTDEFINED','不定科目');
 
+	// for english lessons.
+
+define('CONST_ABSENT_ENG','Absent:');
+define('CONST_ABSENT1_ENG','Absent1:');
+define('CONST_ABSENT2_ENG','Absent2:');
+define('CONST_ABSENTOFF_ENG','No Class');
+define('CONST_ABSENTLATE_ENG','Today');
+define('CONST_ALTERNATE_ENG','make-up');
 
 $teacher_list = get_teacher_list($db);
 
@@ -282,14 +290,26 @@ try{
 							// 休み処理
 		if ($cancel == 'a1') { 
 			$absent_flag = '1'; 
-			$evt_summary = $evt_summary.CONST_ABSENT1;
+			if ($lesson_id == 2 ) {		// English lesson.
+				$evt_summary = $evt_summary.CONST_ABSENT1_ENG;
+			} else {			// not English.
+				$evt_summary = $evt_summary.CONST_ABSENT1;
+			}
 			$event_diff_hours = 0;
 		} else if ($cancel == 'a2') { 
 			$absent_flag = '2';
-			$evt_summary = $evt_summary.CONST_ABSENT2;
+			if ($lesson_id == 2 ) {		// English lesson.
+				$evt_summary = $evt_summary.CONST_ABSENT2_ENG;
+			} else {			// not English.
+				$evt_summary = $evt_summary.CONST_ABSENT2;
+			}
 		} else if ($cancel == 'a') { 
 			$absent_flag = '1'; 
-			$evt_summary = $evt_summary.CONST_ABSENT;
+			if ($lesson_id == 2 ) {		// English lesson.
+				$evt_summary = $evt_summary.CONST_ABSENT_ENG;
+			} else {			// not English.
+				$evt_summary = $evt_summary.CONST_ABSENT;
+			}
 			$event_diff_hours = 0;
 		} else { $absent_flag = '0'; }
 							// 振替処理
@@ -300,7 +320,11 @@ try{
 			$alternative_flag = '1' ;  
 			$recurringEvent = '0';
 			$event_diff_hours = 0;
-			$evt_summary = $evt_summary.CONST_ALTERNATE;
+			if ($lesson_id == 2 ) {		// English lesson.
+				$evt_summary = $evt_summary.CONST_ALTERNATE_ENG;
+			} else {			// not English.
+				$evt_summary = $evt_summary.CONST_ALTERNATE;
+			}
 		} else {
 			$alternative_flag = '';
 		} 
@@ -378,10 +402,18 @@ try{
 			}  
 			if ($cancel_reason == CONST_ABSENTLATE ) { 
 				$evt_summary = $evt_summary.CONST_COLON;
-				$evt_summary = $evt_summary.CONST_ABSENTLATE;
+				if ($lesson_id == 2 ) {		// English lesson.
+					$evt_summary = $evt_summary.CONST_ABSENTLATE_ENG;
+				} else {			// not English.
+					$evt_summary = $evt_summary.CONST_ABSENTLATE;
+				}
 			} else if ($cancel_reason == CONST_ABSENTOFF ) { 
 				$evt_summary = $evt_summary.CONST_COLON;
-				$evt_summary = $evt_summary.CONST_ABSENTOFF;
+				if ($lesson_id == 2 ) {		// English lesson.
+					$evt_summary = $evt_summary.CONST_ABSENTOFF_ENG;
+				} else {			// not English.
+					$evt_summary = $evt_summary.CONST_ABSENTOFF;
+				}
 			} 
 			$evt_summary = $evt_summary.CONST_CLOSING ;
 		}
@@ -411,10 +443,18 @@ try{
 			}  
 			if ($cancel_reason == CONST_ABSENTLATE ) { 
 				$evt_summary = $evt_summary.CONST_COLON;
-				$evt_summary = $evt_summary.CONST_ABSENTLATE;
+				if ($lesson_id == 2 ) {		// English lesson.
+					$evt_summary = $evt_summary.CONST_ABSENTLATE_ENG;
+				} else {			// not English.
+					$evt_summary = $evt_summary.CONST_ABSENTLATE;
+				}
 			} else if ($cancel_reason == CONST_ABSENTOFF ) { 
 				$evt_summary = $evt_summary.CONST_COLON;
-				$evt_summary = $evt_summary.CONST_ABSENTOFF;
+				if ($lesson_id == 2 ) {		// English lesson.
+					$evt_summary = $evt_summary.CONST_ABSENTOFF_ENG;
+				} else {			// not English.
+					$evt_summary = $evt_summary.CONST_ABSENTOFF;
+				}
 			} 
 		} 
 
